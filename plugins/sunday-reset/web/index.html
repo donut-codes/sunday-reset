@@ -141,6 +141,7 @@ textarea{min-height:5.5em;resize:vertical}
 .days .d small{display:block;font-family:var(--body);font-weight:400;color:var(--muted);font-size:.8rem}
 .ev{display:block}
 .ev.busy{color:var(--muted)}
+.ev.new.emo::before{content:none}
 .ev.new::before{content:"+ ";color:var(--herb);font-weight:700}
 .why{display:block;color:var(--muted);font-size:.88rem;margin-left:1.1em}
 .ok{border-left:5px solid var(--flag);background:var(--flag-soft);padding:12px 14px;margin:10px 0;border-radius:0 8px 8px 0}
@@ -215,7 +216,7 @@ if(SETUP){ document.title = 'Set up Sunday Reset'; document.querySelectorAll('.s
 
 // ---------- state ----------
 const A = {
-  name:"", email:"", household:"1", householdNotes:"", mealStyle:"batch_cook", dinners:"5", storage:"documents", style:"both", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
+  name:"", email:"", household:"1", householdNotes:"", mealStyle:"batch_cook", dinners:"5", storage:"documents", style:"both", emoji:"yes", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
   computer:"mac", calendarApp:"apple", todoApp:"apple",
   store:"", store2:"", store3:"", storeRule:"main_first", mode:"pickup", size:"per_oz", produce:"organic_unless", threshold:"50",
   price:"balanced", confirmBrands:true,
@@ -305,7 +306,10 @@ const STEPS = [
         <input type="time" id="f-ct" name="customTime" value="${esc(A.customTime)}" step="900">
       </div></fieldset>
     <fieldset class="q"><legend>How much detail in the email?</legend>
-      ${radios('style',[["short","Short: plan and to-dos"],["full","Full: plan plus the reasons"],["both","Send both for now"]])}</fieldset>` },
+      ${radios('style',[["short","Short: plan and to-dos"],["full","Full: plan plus the reasons"],["both","Send both for now"]])}</fieldset>
+    <fieldset class="q"><legend>Add emojis to your email?</legend>
+      <p class="hint">Small icons on sections, grocery aisles, and the week, like 🥦 Produce and 🏃 Studio class.</p>
+      ${radios('emoji',[["yes","Yes"],["no","No, keep it plain"]])}</fieldset>` },
 
   { title:"Your setup", body:() => `
     <p class="muted">Works on a Mac or a Windows PC, with the calendar and to-do apps you already use.</p>
@@ -453,6 +457,11 @@ const CATALOG = [
   [/pasta|penne|spaghetti|rigatoni/i,2.43,"Pantry"],[/sauce|marinara|arrabbiata/i,9.19,"Pantry"],[/rice/i,3.99,"Pantry"],
   [/cracker/i,7.99,"Snacks"],[/chip/i,4.49,"Snacks"],[/bar/i,5.79,"Snacks"],[/coffee/i,11.99,"Pantry"],[/bread/i,5.49,"Bakery"]
 ];
+const EMO_SECTION = {"Needs your OK":"✋", "The week":"📅", "Grocery list":"🛒", "Coming up":"🎟️", "Live a little":"🎸", "Saved":"💾"};
+const EMO_AISLE = {"Produce":"🥦", "Bakery":"🍞", "Meat and seafood":"🥩", "Dairy and fridge":"🥛", "Pantry":"🥫", "Snacks":"🍪", "Other":"🧺"};
+const EMO_KIND = {meal:"🍳", move:"🏃", admin:"📬", pet:"🐶", fun:"🎉"};
+function emo(){ return A.emoji === "yes"; }
+function sec(title, key){ const k = key || title; return emo() && EMO_SECTION[k] ? `${EMO_SECTION[k]} ${title}` : title; }
 const AISLE_ORDER = ["Produce","Bakery","Meat and seafood","Dairy and fridge","Pantry","Snacks","Other"];
 function lookup(name){
   for(const [re,p,a] of CATALOG){ if(re.test(name)) return {price:p, aisle:a}; }
@@ -604,19 +613,19 @@ function build(){
     const evs = [];
     BUSY.filter(b=>b.day===d).forEach(b => evs.push({busy:true, text:b.label}));
     if(d===0){
-      evs.push({text:shopLabel, why:`Your plan arrives ${A.runDay} at ${runTimeLabel()}, so there's time to review the list first`});
-      evs.push({text:"Batch cook, 2:00 to 3:30 PM", why: protein ? `Five portions built around ${protein}` : "Five portions for the week"});
+      evs.push({kind:"meal", text:shopLabel, why:`Your plan arrives ${A.runDay} at ${runTimeLabel()}, so there's time to review the list first`});
+      evs.push({kind:"meal", text:"Batch cook, 2:00 to 3:30 PM", why: protein ? `Five portions built around ${protein}` : "Five portions for the week"});
     }
     const wi = workouts.indexOf(d);
     if(wi > -1){
       const studio = wi < studioCount;
-      evs.push({text:`${studio?"Studio class":"Home strength session"}, ${SLOT_TIME[A.workTime]}`,
+      evs.push({kind:"move", text:`${studio?"Studio class":"Home strength session"}, ${SLOT_TIME[A.workTime]}`,
         why: A.easyAfterSleep==="yes" ? "Swaps to an easy session if your watch shows a rough night" : "Stays on the plan whatever your sleep looks like"});
     }
     skipped.filter(s=>s.day===d).forEach(s => evs.push({skip:true, text:`No workout today`, why:`${s.reason} overlaps your usual ${A.workTime} slot`}));
-    petEvents.filter(p=>p.day===d).forEach(p => evs.push({text:p.text, why:"From your pet care settings"}));
-    INBOX.filter(x=>x.day===d).forEach(x => evs.push({text:x.text, why:"Found in your inbox"}));
-    hobbyEvents.filter(h=>h.day===d).forEach(h => evs.push({text:h.text, why:h.why}));
+    petEvents.filter(p=>p.day===d).forEach(p => evs.push({kind:"pet", text:p.text, why:"From your pet care settings"}));
+    INBOX.filter(x=>x.day===d).forEach(x => evs.push({kind:"admin", text:x.text, why:"Found in your inbox"}));
+    hobbyEvents.filter(h=>h.day===d).forEach(h => evs.push({kind:"fun", text:h.text, why:h.why}));
     days.push({d, evs});
   }
 
@@ -744,10 +753,11 @@ function renderPreview(){
   const dayHtml = P.days.map(({d,evs}) => {
     const dt = dayDate(d);
     const body = evs.length ? evs.map(e => {
-      const cls = e.busy ? "ev busy" : e.skip ? "ev busy" : "ev new";
+      const icon = emo() && !e.busy && !e.skip && EMO_KIND[e.kind] ? EMO_KIND[e.kind] + " " : "";
+      const cls = e.busy ? "ev busy" : e.skip ? "ev busy" : icon ? "ev new emo" : "ev new";
       const why = (full && e.why) ? `<span class="why">${esc(e.why)}</span>` : "";
       if(e.skip && !full) return "";
-      return `<span class="${cls}">${esc(e.text)}${e.busy?' <span class="note">(already on your calendar)</span>':''}</span>${why}`;
+      return `<span class="${cls}">${icon}${esc(e.text)}${e.busy?' <span class="note">(already on your calendar)</span>':''}</span>${why}`;
     }).join('') : `<span class="ev busy">Open day</span>`;
     return `<li><span class="d">${fmt(dt,{weekday:'short'})}<small>${fmt(dt,{month:'short',day:'numeric'})}</small></span><span>${body}</span></li>`;
   }).join('');
@@ -761,7 +771,7 @@ function renderPreview(){
   }).join('');
 
   const aisleHtml = g => AISLE_ORDER.filter(a => g[a]).map(a => `
-    <div class="aisle">${a}</div><ul class="items">${P.byAisle[a].map(it =>
+    <div class="aisle">${emo() && EMO_AISLE[a] ? EMO_AISLE[a] + " " : ""}${a}</div><ul class="items">${P.byAisle[a].map(it =>
       `<li><span>${esc(it.name)}${full && it.why ? `<span class="rule">${esc(it.why)}</span>`:''}</span><span>${it.reorder?'reorder':money(it.price)}</span></li>`).join('')}</ul>`).join('');
   const order = stores().length ? stores() : ["Your store"];
   const storeNames = order.filter(sn => P.byStore[sn]);
@@ -797,25 +807,25 @@ function renderPreview(){
       <div class="mailhead"><b>Sunday Reset</b> to ${esc(who || "you")}<br>Your week of ${esc(fmt(SUN,{month:'long', day:'numeric'}))}</div>
       <div class="mailbody">
         <h2>${esc(greeting())}</h2>
-        <p>Here's the week. New items are marked with a plus and are already in ${esc(CAL[A.calendarApp])} and ${esc(TODO[A.todoApp])}.</p>
+        <p>Here's the week. ${emo() ? "Everything new below is" : "New items are marked with a plus and are"} already in ${esc(CAL[A.calendarApp])} and ${esc(TODO[A.todoApp])}.</p>
         ${whyTop}
-        ${P.oks.length ? `<section><h3>Needs your OK</h3><p class="note">Replies by ${esc(replyByLabel())}. If you don't answer, my picks stand.</p>${okHtml}</section>` : ""}
-        <section><h3>The week</h3><ul class="days">${dayHtml}</ul>
+        ${P.oks.length ? `<section><h3>${sec("Needs your OK")}</h3><p class="note">Replies by ${esc(replyByLabel())}. If you don't answer, my picks stand.</p>${okHtml}</section>` : ""}
+        <section><h3>${sec("The week")}</h3><ul class="days">${dayHtml}</ul>
           ${full && P.workouts.length < parseInt(A.workDays,10) ? `<p class="note">You asked for ${A.workDays} workouts. ${P.workouts.length} fit around your calendar this week.</p>` : ""}</section>
-        <section><h3>Grocery list</h3>
+        <section><h3>${sec("Grocery list")}</h3>
           <p class="note">${mainStore() ? `Saved as "${esc(listName)}" and sorted in the order you walk the store. Nothing goes in your cart.` : `Sorted by aisle. Add your store in setup to get live prices and a saved list.`}</p>
           ${listHtml}
           <div class="total"><span>Estimated total</span><span>${money(P.total)}</span></div>${deliv}
         </section>
-        ${P.events.length ? `<section><h3>Coming up near ${esc(A.city.trim() || "you")}</h3>
+        ${P.events.length ? `<section><h3>${sec("Coming up near " + esc(A.city.trim() || "you"), "Coming up")}</h3>
           <p class="note">Sample picks for the prototype. The real version searches ${A.radius==="city"?"your city":A.radius==="30"?"within 30 minutes":"within an hour"} for the next month.</p>
           <ul class="plain">${P.events.map(e=>`<li><b>${fmt(e.date,{weekday:'short', month:'short', day:'numeric'})}</b>: ${esc(e.text)}${full?`<span class="why" style="margin-left:0">${esc(e.why)}</span>`:''}</li>`).join('')}</ul></section>` : ""}
-        ${P.hobbies.length ? `<section><h3>Live a little</h3>
+        ${P.hobbies.length ? `<section><h3>${sec("Live a little")}</h3>
           <ul class="plain">${P.hobbies.map(h=>{const nm=esc(h.name.trim()); const f={weekly:"every week",biweekly:"every other week",monthly:"once a month"}[h.freq];
             const status = h.name.trim()===P.hobbyNudge ? "Overdue, see Needs your OK above" : h.freq==="monthly" ? "Done this month" : "On the calendar this week";
             return `<li><b>${nm}</b>, ${f}: ${status}</li>`;}).join('')}</ul>
           ${full?`<p class="note">Hobby time is treated like a workout. If something bumps it, it moves to another open slot instead of quietly disappearing.</p>`:''}</section>` : ""}
-        <section><h3>Saved</h3><p class="note">This week's plan and list are saved to ${STORE_LABEL[A.storage]}, so you can repeat it later.</p></section>
+        <section><h3>${sec("Saved")}</h3><p class="note">This week's plan and list are saved to ${STORE_LABEL[A.storage]}, so you can repeat it later.</p></section>
         <p class="note" style="margin-top:28px;padding-top:14px;border-top:1px solid var(--line)">To stop these emails, run /sunday-reset:stop in Claude Code.</p>
       </div>
     </article>
@@ -884,7 +894,7 @@ function buildConfig(){
     platform: {computer: A.computer, calendar: A.calendarApp,
       todos: {apple:"apple_reminders", google:"google_tasks", microsoft:"microsoft_todo", todoist:"todoist"}[A.todoApp]},
     schedule: {weekly_day: A.runDay, weekly_time: to24(runTimeLabel()), daily_sweep_time: "06:30"},
-    email: {summary_style: A.style, send_to_self_only: true, fallback: "draft"},
+    email: {summary_style: A.style, emoji: A.emoji === "yes", send_to_self_only: true, fallback: "draft"},
     history: {location: {documents:"documents", drive:"google_drive", onedrive:"onedrive"}[A.storage],
       path: A.storage === "documents" ? "~/Documents/Sunday Reset/history" : "Sunday Reset/history"},
     household: {size: parseInt(A.household,10), notes: A.householdNotes.trim()},
@@ -930,6 +940,7 @@ function summaryRows(){
     ["Name", c.user.name || "(none, the greeting skips it)"],
     ["Plan goes to", c.user.email],
     ["When", `${A.runDay} at ${runTimeLabel()}, ${A.style === "both" ? "short and full versions" : A.style + " version"}`],
+    ["Emojis", A.emoji === "yes" ? "on" : "off"],
     ["Runs on", `${A.computer === "windows" ? "Windows PC" : "Mac"}, ${CAL[A.calendarApp]}, ${TODO[A.todoApp]}`],
     ["History", STORE_LABEL[A.storage]],
     ["Household", `${c.household.size === 1 ? "Just you" : c.household.size + " people"}${c.household.notes ? ", " + c.household.notes : ""}`],

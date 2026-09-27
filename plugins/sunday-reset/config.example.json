@@ -3,7 +3,7 @@
   "user": { "name": "", "email": "you@example.com" },
   "platform": { "computer": "mac", "calendar": "apple", "todos": "apple_reminders" },
   "schedule": { "weekly_day": "Sunday", "weekly_time": "07:00", "daily_sweep_time": "06:30" },
-  "email": { "summary_style": "both", "send_to_self_only": true, "fallback": "draft" },
+  "email": { "summary_style": "both", "emoji": true, "send_to_self_only": true, "fallback": "draft" },
   "history": { "location": "documents", "path": "~/Documents/Sunday Reset/history" },
   "household": { "size": 1, "notes": "" },
   "grocery": {

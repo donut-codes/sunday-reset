@@ -1,6 +1,6 @@
 {
  "full": false,
- "emoji": false,
+ "emoji": true,
  "greeting": "Good morning.",
  "intro": "This is a dry run with sample data, so you can check the layout before your first real week.",
  "test_notes": [

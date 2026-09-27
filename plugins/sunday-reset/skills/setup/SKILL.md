@@ -32,7 +32,7 @@ The questions live in one page, `${CLAUDE_PLUGIN_ROOT}/web/index.html`. It's the
 5. Read the saved config and show a short summary. Then ask, in the terminal, the few things the page doesn't cover yet, all optional: pet vet or vaccine dates, pet food brand and bag size.
 
 If the user would rather answer in the terminal, or the page can't open (no browser, remote session), ask the same questions here instead, a few at a time, defaults in brackets:
-1. **Basics:** name [blank, greeting drops the name], email address for the plan (required), which day and time the plan arrives [Sunday 7:00 AM; allow any day and any time], short, full, or both email versions [both].
+1. **Basics:** name [blank, greeting drops the name], email address for the plan (required), which day and time the plan arrives [Sunday 7:00 AM; allow any day and any time], short, full, or both email versions [both], emojis on sections, grocery aisles, and the week [yes].
 2. **Your setup:** computer [detect from `uname`], calendar app (Apple Calendar, Google Calendar, Outlook), to-do app (Apple Reminders, Google Tasks, Microsoft To Do, Todoist), where weekly history lives (Documents folder, Google Drive, OneDrive).
 3. **Household:** how many people you shop and cook for [1], anything about who's eating (kids' favorites, a healthy skew).
 4. **How you shop:** main store, up to two other stores, how to split across stores (main first / cheapest / by category), pickup, delivery, or in store, sizes (best price per ounce / usual size / best per ounce but ask), produce (always organic / conventional / organic unless it costs more than X%, where X is 0 to 100 [50]), price sensitivity (value / balanced / premium) and whether to confirm new brands [yes].
