@@ -14,7 +14,7 @@
 # If the Mac is asleep at a scheduled time, launchd runs the job when it wakes. If it's off, that run is missed.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-BASE="$HOME/Documents/Sunday Reset"; LOGS="$BASE/logs"; mkdir -p "$LOGS"
+BASE="$HOME/Library/Application Support/Sunday Reset"; LOGS="$BASE/logs"; mkdir -p "$LOGS"   # not Documents: macOS blocks background jobs there
 AGENTS="${SUNDAY_RESET_AGENTS_DIR:-$HOME/Library/LaunchAgents}"; mkdir -p "$AGENTS"
 CLAUDE="$(command -v claude || true)"; [ -n "$CLAUDE" ] || { echo "claude not found on PATH" >&2; exit 1; }
 UIDN="$(id -u)"
@@ -28,8 +28,8 @@ c = json.load(open(sys.argv[1]))
 for t in c.get("platform", {}).get("allowed_tools", []):
     print(t)
 # weekly history kept in Google Drive or OneDrive sits outside the Sunday Reset folder
-p = os.path.abspath(os.path.expanduser(c.get("history", {}).get("path", "") or "~/Documents/Sunday Reset/history"))
-if not p.startswith(os.path.expanduser("~/Documents/Sunday Reset")):
+p = os.path.abspath(os.path.expanduser(c.get("history", {}).get("path", "") or "~/Library/Application Support/Sunday Reset/history"))
+if not p.startswith(os.path.expanduser("~/Library/Application Support/Sunday Reset")):
     print("Edit(/" + p + "/**)")
 PY
 )

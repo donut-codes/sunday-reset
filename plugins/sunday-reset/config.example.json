@@ -1,10 +1,10 @@
 {
-  "_note": "Setup writes your real config to ~/Documents/Sunday Reset/config.json. This file only shows the shape. Never commit your real config.",
+  "_note": "Setup writes your real config to ~/Library/Application Support/Sunday Reset/config.json (Windows: %APPDATA%\\Sunday Reset). This file only shows the shape. Never commit your real config.",
   "user": { "name": "", "email": "you@example.com" },
   "platform": { "computer": "mac", "calendar": "apple", "todos": "apple_reminders" },
   "schedule": { "weekly_day": "Sunday", "weekly_time": "07:00", "daily_sweep_time": "06:30" },
   "email": { "summary_style": "both", "emoji": true, "send_to_self_only": true, "fallback": "draft" },
-  "history": { "location": "documents", "path": "~/Documents/Sunday Reset/history" },
+  "history": { "location": "local", "path": "~/Library/Application Support/Sunday Reset/history" },
   "household": { "size": 1, "notes": "" },
   "grocery": {
     "stores": ["Whole Foods"],
@@ -24,7 +24,7 @@
   },
   "meals": { "style": "batch_cook", "cook_nights": 1, "dinners_per_week": 5, "proteins": ["chicken", "salmon"], "protein_mode": "rotate" },
   "pets": [ { "name": "", "type": "dog", "monthly_meds": true, "grooming": { "type": "home", "every_weeks": 4 } } ],
-  "workouts": { "per_week": 4, "split": "mix", "time_of_day": "morning", "easy_after_bad_sleep": true, "health_export_path": "~/Documents/Sunday Reset/health/latest.json" },
+  "workouts": { "per_week": 4, "split": "mix", "time_of_day": "morning", "easy_after_bad_sleep": true, "health_export_path": "~/Library/Application Support/Sunday Reset/health/latest.json" },
   "extras": {
     "local_events": { "enabled": true, "area": "", "interests": [], "radius": "30min" },
     "hobbies": { "enabled": true, "list": [ { "name": "", "every": "week" } ] }

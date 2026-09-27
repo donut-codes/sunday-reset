@@ -1,11 +1,11 @@
 ---
 name: setup
-description: First-run setup for Sunday Reset. Use when the user installs Sunday Reset, says "set up Sunday Reset", "get started", "change my settings", or when ~/Documents/Sunday Reset/config.json does not exist yet. Creates the folder, opens the setup page in the browser (or asks the questions in the terminal), saves the config, triggers every permission prompt while the user is present, runs setup-check, installs the schedule, and finishes with a dry run.
+description: First-run setup for Sunday Reset. Use when the user installs Sunday Reset, says "set up Sunday Reset", "get started", "change my settings", or when ~/Library/Application Support/Sunday Reset/config.json does not exist yet. Creates the folder, opens the setup page in the browser (or asks the questions in the terminal), saves the config, triggers every permission prompt while the user is present, runs setup-check, installs the schedule, and finishes with a dry run.
 ---
 
 # Sunday Reset setup
 
-Everything that needs the user present happens here, so scheduled runs never stop to ask for permission when nobody is at the computer. Keep a running progress file at `~/Documents/Sunday Reset/state/setup-progress.json` (`{"completed_steps": [...]}`) so that if a step fails, the next `/sunday-reset:setup` resumes from that step instead of starting over.
+Everything that needs the user present happens here, so scheduled runs never stop to ask for permission when nobody is at the computer. Keep a running progress file at `~/Library/Application Support/Sunday Reset/state/setup-progress.json` (`{"completed_steps": [...]}`) so that if a step fails, the next `/sunday-reset:setup` resumes from that step instead of starting over.
 
 Plugin files live in `${CLAUDE_PLUGIN_ROOT}`. Scripts are in `${CLAUDE_PLUGIN_ROOT}/scripts`.
 
@@ -16,15 +16,18 @@ Plugin files live in `${CLAUDE_PLUGIN_ROOT}`. Scripts are in `${CLAUDE_PLUGIN_RO
 - Never type passwords, card numbers, or API keys. If a site needs a sign-in, the user does it themselves.
 
 ## Step 1: Create the folder (first, because everything else lives in it)
-Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh`. On a Mac this triggers the Documents permission prompt. Tell the user to click Allow. Expect `WRITE_OK`.
-If the output shows `OFFLOADED_FILES`, or the user has iCloud Desktop & Documents turned on, ask them to right-click `Documents/Sunday Reset` in Finder and choose **Keep Downloaded**, then rerun the script and confirm `NO_OFFLOADED_FILES`.
+Everything personal lives in `~/Library/Application Support/Sunday Reset/` (Windows: `%APPDATA%\Sunday Reset`). Not Documents: macOS blocks background jobs like the weekly schedule from writing to Documents, Desktop, Downloads, and iCloud Drive, so a folder there works while you're watching and fails at 7am.
+Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh --migrate --link`. Expect `WRITE_OK`.
+- `MIGRATED` means settings from an older `~/Documents/Sunday Reset` folder were moved over. Tell the user.
+- `MIGRATE_SKIPPED` means both places have a config.json: show what differs, ask which to keep, then move the chosen one into the new folder and delete the old folder only after the user says yes.
+- `LINK_OK` means there's a Finder shortcut at `~/Documents/Sunday Reset` pointing to the real folder, so the user can still find their settings and history. It may trigger a one-time Documents permission prompt; that's fine because the user is here. Background runs never use the shortcut.
 Then run `python3 --version`. The weekly email is rendered with Python. On a Mac without Apple's command line tools this fails or opens an install prompt: have the user run `xcode-select --install`, wait for it to finish, and rerun. If they have Xcode but never accepted its license, `sudo xcodebuild -license accept` fixes it (they type their own password).
 
 ## Step 2: Setup page (answers happen in the browser)
 The questions live in one page, `${CLAUDE_PLUGIN_ROOT}/web/index.html`. It's the same page as the public prototype, so the questions can't drift apart.
 
-1. If `~/Documents/Sunday Reset/config.json` already exists, ask first: keep it (skip to Step 3), change some answers, or start over. For "change" or "start over", continue below; the page saves to `config.new.json` so nothing is overwritten.
-2. If the user has a `config.json` downloaded from the public prototype (for example in Downloads), offer to use it: move it to `~/Documents/Sunday Reset/config.json` (or `config.new.json`), then ask only for what's missing, which is always `user.email`.
+1. If `~/Library/Application Support/Sunday Reset/config.json` already exists, ask first: keep it (skip to Step 3), change some answers, or start over. For "change" or "start over", continue below; the page saves to `config.new.json` so nothing is overwritten.
+2. If the user has a `config.json` downloaded from the public prototype (for example in Downloads), offer to use it: move it to `~/Library/Application Support/Sunday Reset/config.json` (or `config.new.json`), then ask only for what's missing, which is always `user.email`.
 3. Otherwise start the page in the background (use the Bash tool's background option, because it waits for the user):
    `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/setup_server.py`
    It prints `SETUP_URL <url>` and opens the browser. Tell the user: "Your setup page just opened in your browser. Answer the questions there and click Save and finish. I'll pick up as soon as it's saved." If the browser didn't open, give them the URL.
@@ -33,7 +36,7 @@ The questions live in one page, `${CLAUDE_PLUGIN_ROOT}/web/index.html`. It's the
 
 If the user would rather answer in the terminal, or the page can't open (no browser, remote session), ask the same questions here instead, a few at a time, defaults in brackets:
 1. **Basics:** name [blank, greeting drops the name], email address for the plan (required), which day and time the plan arrives [Sunday 7:00 AM; allow any day and any time], short, full, or both email versions [both], emojis on sections, grocery aisles, and the week [yes].
-2. **Your setup:** computer [detect from `uname`], calendar app (Apple Calendar, Google Calendar, Outlook), to-do app (Apple Reminders, Google Tasks, Microsoft To Do, Todoist), where weekly history lives (Documents folder, Google Drive, OneDrive).
+2. **Your setup:** computer [detect from `uname`], calendar app (Apple Calendar, Google Calendar, Outlook), to-do app (Apple Reminders, Google Tasks, Microsoft To Do, Todoist), where weekly history lives (this computer, Google Drive, OneDrive).
 3. **Household:** how many people you shop and cook for [1], anything about who's eating (kids' favorites, a healthy skew).
 4. **How you shop:** main store, up to two other stores, how to split across stores (main first / cheapest / by category), pickup, delivery, or in store, sizes (best price per ounce / usual size / best per ounce but ask), produce (always organic / conventional / organic unless it costs more than X%, where X is 0 to 100 [50]), price sensitivity (value / balanced / premium) and whether to confirm new brands [yes].
 5. **Usuals:** items bought most weeks, each with brand(s) and a rule: only this brand, this brand but swap if out, whichever is on sale, cheapest. Bundles of items always bought together (for example pasta night: penne, arrabbiata, onion, garlic). Offer to read the user's purchase history on the store site in Chrome and suggest rules to confirm.
@@ -42,7 +45,7 @@ If the user would rather answer in the terminal, or the page can't open (no brow
 8. **Workouts:** per week, studio vs home, time of day, go easier after a rough night of sleep.
 9. **Extras (optional):** local events (city, interests, how far), hobbies with how often (weekly, every other week, monthly).
 
-Save answers to `~/Documents/Sunday Reset/config.json` using the shape in `${CLAUDE_PLUGIN_ROOT}/config.example.json`. Show the user a short summary and let them correct it.
+Save answers to `~/Library/Application Support/Sunday Reset/config.json` using the shape in `${CLAUDE_PLUGIN_ROOT}/config.example.json`. Show the user a short summary and let them correct it.
 
 ## Step 3: Permissions (one at a time, user clicks Allow)
 - Calendar: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/mac/calendar.sh list-calendars`. Ask which calendar to write to and save it as `platform.calendar_name`.
@@ -52,7 +55,7 @@ Save answers to `~/Documents/Sunday Reset/config.json` using the shape in `${CLA
 ## Step 4: Connections
 - **Email:** find a Gmail (or other mail) tool that can send. If none exists, tell the user which connector to add, then continue. Sunday Reset only ever emails `user.email`.
 - **Chrome:** check that the Claude in Chrome extension is connected. For each store in the config, open its site and ask the user to sign in themselves if lists need an account. Record what works in `grocery.store_support`.
-- **Health data (optional):** ask the user to set up a Health auto-export app that writes a daily JSON to `~/Documents/Sunday Reset/health/latest.json`.
+- **Health data (optional):** ask the user to set up a Health auto-export app that writes a daily JSON to `~/Library/Application Support/Sunday Reset/health/latest.json`.
 - **Record the tools scheduled runs may use.** Scheduled runs have nobody to approve anything, so they can only use tools on an explicit list. Save the exact tool names you verified above to `platform.allowed_tools` in config.json: the mail send tool, the mail search/read tool, any non-Apple calendar or to-do connector tools, and `mcp__claude-in-chrome` if Chrome is connected. Nothing else. Tell the user in one line that this is the complete list of what the schedule can touch.
 
 ## Step 5: Run `/sunday-reset:setup-check`

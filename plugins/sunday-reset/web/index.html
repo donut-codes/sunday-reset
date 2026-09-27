@@ -216,7 +216,7 @@ if(SETUP){ document.title = 'Set up Sunday Reset'; document.querySelectorAll('.s
 
 // ---------- state ----------
 const A = {
-  name:"", email:"", household:"1", householdNotes:"", mealStyle:"batch_cook", dinners:"5", storage:"documents", style:"both", emoji:"yes", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
+  name:"", email:"", household:"1", householdNotes:"", mealStyle:"batch_cook", dinners:"5", storage:"local", style:"both", emoji:"yes", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
   computer:"mac", calendarApp:"apple", todoApp:"apple",
   store:"", store2:"", store3:"", storeRule:"main_first", mode:"pickup", size:"per_oz", produce:"organic_unless", threshold:"50",
   price:"balanced", confirmBrands:true,
@@ -245,7 +245,7 @@ function checks(key, opts){
 function text(key, ph){ return `<input type="text" name="${key}" value="${esc(A[key])}" placeholder="${esc(ph||'')}">`; }
 const CAL = {apple:"Apple Calendar", google:"Google Calendar", outlook:"Outlook"};
 const TODO = {apple:"Reminders", google:"Google Tasks", microsoft:"Microsoft To Do", todoist:"Todoist"};
-const STORE_LABEL = {documents:"your Documents folder, in Sunday Reset", drive:"Google Drive, in the Sunday Reset folder", onedrive:"OneDrive, in the Sunday Reset folder"};
+const STORE_LABEL = {local:"the Sunday Reset folder on this computer", drive:"Google Drive, in the Sunday Reset folder", onedrive:"OneDrive, in the Sunday Reset folder"};
 const SUPPORT = [
   [/whole\s*foods/i, "Live prices and a saved list"],
   [/target/i, "Live prices and stock"],
@@ -322,7 +322,7 @@ const STEPS = [
       ${radios('todoApp',[["apple","Apple Reminders"],["google","Google Tasks"],["microsoft","Microsoft To Do"],["todoist","Todoist"]])}</fieldset>
     <fieldset class="q"><legend>Where should your weekly history live?</legend>
       <p class="hint">Past weeks are saved so you can repeat a favorite one.</p>
-      ${radios('storage',[["documents","Documents folder on this computer"],["drive","Google Drive"],["onedrive","OneDrive"]])}</fieldset>` },
+      ${radios('storage',[["local","This computer"],["drive","Google Drive"],["onedrive","OneDrive"]])}</fieldset>` },
 
   { title:"How you shop", body:() => `
     <div class="q"><label class="lab">Your main store</label>${text('store','Whole Foods, Safeway, Trader Joe\u2019s...')}</div>
@@ -657,14 +657,14 @@ function render(){
       <section class="hero">
         <div class="kicker">Setup</div>
         <h1>Set up Sunday Reset</h1>
-        <p class="lede">Answer these once. When you finish, your answers are saved to the Sunday Reset folder in Documents on this computer, and Claude Code takes it from there.</p>
+        <p class="lede">Answer these once. When you finish, your answers are saved to the Sunday Reset folder on this computer, and Claude Code takes it from there.</p>
         <button class="btn" data-go="0">Start setup</button>
         <p class="meta">About 5 minutes. Nothing you type here leaves this computer.</p>
       </section>
       <section>
         <h2 style="font-size:1.25rem">What happens after this page</h2>
         <ol class="how">
-          <li><span><b>Your answers are saved</b> to <code>~/Documents/Sunday Reset/config.json</code>.</span></li>
+          <li><span><b>Your answers are saved</b> to the Sunday Reset folder on this computer. There's a shortcut to it in Documents.</span></li>
           <li><span><b>Claude Code finishes up</b> in your terminal: it asks your Mac for Calendar and Reminders access (click Allow), connects email and Chrome, and tests everything.</span></li>
           <li><span><b>A test email arrives</b> so you can see your first plan before anything is scheduled for real.</span></li>
         </ol>
@@ -796,7 +796,7 @@ function renderPreview(){
       <ol class="how">
         <li><span><b>What it does.</b> Each week it checks ${esc(CAL[A.calendarApp])} and your inbox, plans around what's already there, adds new items to ${esc(CAL[A.calendarApp])} and ${esc(TODO[A.todoApp])}, and builds your grocery list${mainStore() ? " for " + esc(mainStore()) : ""}. Then it emails you the plan. Once a day it also checks your inbox for bills, trials, deliveries, and appointments.</span></li>
         <li><span><b>When.</b> Every ${esc(A.runDay)} at ${esc(runTimeLabel())}, from your ${A.computer==="windows" ? "Windows PC" : "Mac"}. If it's asleep then, the plan goes out when it wakes; if it's switched off, that week is missed. Your first plan would arrive ${esc(dateLine)}. Reply to anything under "Needs your OK" within 3 hours, or its picks stand.</span></li>
-        <li><span><b>How to stop it.</b> Run <code>/sunday-reset:stop</code> in Claude Code. It removes the schedule right away, then asks whether to remove the upcoming items it added and whether to delete its data: your settings in the Sunday Reset folder in Documents${A.storage==="drive" ? ", and your history in Google Drive" : A.storage==="onedrive" ? ", and your history in OneDrive" : ""}. Nothing is deleted unless you say yes.</span></li>
+        <li><span><b>How to stop it.</b> Run <code>/sunday-reset:stop</code> in Claude Code. It removes the schedule right away, then asks whether to remove the upcoming items it added and whether to delete its data: your settings in the Sunday Reset folder on this computer${A.storage==="drive" ? ", and your history in Google Drive" : A.storage==="onedrive" ? ", and your history in OneDrive" : ""}. Nothing is deleted unless you say yes.</span></li>
       </ol>
       <p class="note" style="margin-top:14px">Sunday Reset is a free plugin for Claude Code. <a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></p>
     </section>`}
@@ -831,7 +831,7 @@ function renderPreview(){
     </article>
     <div class="navrow navrow-dl"><button class="btn ghost" data-go="${STEPS.length-1}">Back to setup</button>
       <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small>
-        ${SETUP ? '' : `<button class="btn ghost" id="cfgBtn" style="margin-top:8px">Download my setup</button><small>Saves your answers as config.json. Put it in Documents/Sunday Reset before running setup in Claude Code, or send it to whoever sets it up for you.</small>`}<span id="dlMsg" class="dlmsg" aria-live="polite"></span><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></div></div>
+        ${SETUP ? '' : `<button class="btn ghost" id="cfgBtn" style="margin-top:8px">Download my setup</button><small>Saves your answers as config.json. When you run setup in Claude Code, tell it where the file is, or send it to whoever sets it up for you.</small>`}<span id="dlMsg" class="dlmsg" aria-live="polite"></span><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></div></div>
   </div>`;
 }
 
@@ -895,8 +895,8 @@ function buildConfig(){
       todos: {apple:"apple_reminders", google:"google_tasks", microsoft:"microsoft_todo", todoist:"todoist"}[A.todoApp]},
     schedule: {weekly_day: A.runDay, weekly_time: to24(runTimeLabel()), daily_sweep_time: "06:30"},
     email: {summary_style: A.style, emoji: A.emoji === "yes", send_to_self_only: true, fallback: "draft"},
-    history: {location: {documents:"documents", drive:"google_drive", onedrive:"onedrive"}[A.storage],
-      path: A.storage === "documents" ? "~/Documents/Sunday Reset/history" : "Sunday Reset/history"},
+    history: {location: {local:"local", drive:"google_drive", onedrive:"onedrive"}[A.storage],
+      path: A.storage === "local" ? "~/Library/Application Support/Sunday Reset/history" : "Sunday Reset/history"},
     household: {size: parseInt(A.household,10), notes: A.householdNotes.trim()},
     grocery: {
       stores: stores(), store_rule: A.storeRule,
@@ -912,7 +912,7 @@ function buildConfig(){
       grooming: {type: A.grooming, every_weeks: A.grooming === "none" ? null : parseInt(A.groomWeeks,10)}}] : [],
     workouts: {per_week: parseInt(A.workDays,10), split: {studio:"studio", half:"mix", home:"home"}[A.split],
       time_of_day: A.workTime, easy_after_bad_sleep: A.easyAfterSleep === "yes",
-      health_export_path: "~/Documents/Sunday Reset/health/latest.json"},
+      health_export_path: "~/Library/Application Support/Sunday Reset/health/latest.json"},
     extras: {
       local_events: {enabled: A.eventsOn === "yes", area: A.city.trim(), interests: A.eventsOn === "yes" ? A.eventTypes : [],
         radius: {city:"city", "30":"30min", "60":"60min"}[A.radius]},
@@ -966,7 +966,7 @@ function renderFinish(){
     : `<div class="topbar"><div class="row spread"><span class="stepcount">Review</span><span class="pct">Almost done</span></div>
         <div class="bar"><b style="width:96%"></b></div></div>
       <h2>Check your answers</h2>
-      <p class="muted">Saving writes these to <code>~/Documents/Sunday Reset/config.json</code> on this computer. You can change anything later by running setup again.</p>
+      <p class="muted">Saving writes these to the Sunday Reset folder on this computer. You can change anything later by running setup again.</p>
       <table class="review" style="width:100%;border-collapse:collapse;margin-top:10px">${summaryRows().map(([k,v]) =>
         `<tr><th style="text-align:left;vertical-align:top;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:700">${esc(k)}</th><td style="padding:8px 0;border-bottom:1px solid var(--line)">${esc(v)}</td></tr>`).join('')}</table>
       ${err ? `<p class="note" style="color:var(--warn);margin-top:14px">${esc(err)}</p>

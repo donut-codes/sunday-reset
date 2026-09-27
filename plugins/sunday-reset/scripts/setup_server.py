@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Serve the Sunday Reset setup page on this computer and save the answers to config.json.
 
-Usage: python3 setup_server.py [--folder "~/Documents/Sunday Reset"] [--no-open] [--timeout 2700]
+Usage: python3 setup_server.py [--folder "~/Library/Application Support/Sunday Reset"] [--no-open] [--timeout 2700]
 
 - Serves web/index.html in setup mode at http://127.0.0.1:<random port>/?mode=setup&token=<random>
 - Listens on 127.0.0.1 only. Saves require the one-time token, a JSON body under 256 KB, and a
@@ -20,7 +20,9 @@ MAX_BODY = 256 * 1024
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--folder", default="~/Documents/Sunday Reset")
+    default = (os.path.join(os.environ.get("APPDATA", "~"), "Sunday Reset") if os.name == "nt"
+               else "~/Library/Application Support/Sunday Reset")  # not Documents: macOS blocks background jobs there
+    ap.add_argument("--folder", default=default)
     ap.add_argument("--no-open", action="store_true")
     ap.add_argument("--timeout", type=int, default=2700)
     args = ap.parse_args()

@@ -22,7 +22,7 @@ In Claude Code:
 /sunday-reset:setup
 ```
 
-Setup takes about 10 minutes and does everything that needs you present: creates `~/Documents/Sunday Reset/`, opens a setup page in your browser for the questions (the same page as the prototype, running only on your computer), triggers each permission prompt, runs `/sunday-reset:setup-check`, installs the schedule, and then runs one test exactly the way the schedule will, with nobody at the keyboard. Stay nearby for that test: macOS may ask whether Claude can use Calendar, Reminders, or Documents, and you click Allow. It finishes by emailing you a sample plan.
+Setup takes about 10 minutes and does everything that needs you present: creates `~/Library/Application Support/Sunday Reset/`, opens a setup page in your browser for the questions (the same page as the prototype, running only on your computer), triggers each permission prompt, runs `/sunday-reset:setup-check`, installs the schedule, and then runs one test exactly the way the schedule will, with nobody at the keyboard. Stay nearby for that test: macOS may ask whether Claude can use Calendar, Reminders, or Documents, and you click Allow. It finishes by emailing you a sample plan.
 
 ## What runs, and when
 
@@ -34,7 +34,7 @@ Setup takes about 10 minutes and does everything that needs you present: creates
 
 If your Mac is asleep at a scheduled time, the run happens when it wakes. If it's switched off, that run is missed.
 
-Scheduled runs happen with nobody to approve anything, so each one is limited to an explicit list: this plugin's own scripts, reading this plugin's files, editing inside `~/Documents/Sunday Reset/`, and the connector tools you approved during setup. Anything else is refused.
+Scheduled runs happen with nobody to approve anything, so each one is limited to an explicit list: this plugin's own scripts, reading this plugin's files, editing inside `~/Library/Application Support/Sunday Reset/`, and the connector tools you approved during setup. Anything else is refused.
 
 ## Commands
 
@@ -49,7 +49,7 @@ Scheduled runs happen with nobody to approve anything, so each one is limited to
 
 ## Stopping and uninstalling
 
-`/sunday-reset:stop` removes the schedule, so nothing else runs. It keeps your settings, so `/sunday-reset:setup` with "keep my settings" turns it back on. It then asks, separately, whether to remove the upcoming calendar blocks and reminders it added, and whether to delete `~/Documents/Sunday Reset/`. Nothing is deleted without a yes.
+`/sunday-reset:stop` removes the schedule, so nothing else runs. It keeps your settings, so `/sunday-reset:setup` with "keep my settings" turns it back on. It then asks, separately, whether to remove the upcoming calendar blocks and reminders it added, and whether to delete `~/Library/Application Support/Sunday Reset/`. Nothing is deleted without a yes.
 
 To remove the plugin itself: `/plugin uninstall sunday-reset@sunday-reset`.
 
@@ -64,7 +64,7 @@ Restart Claude Code, then run `/sunday-reset:setup` and keep your settings. That
 
 ## Where your data lives
 
-Everything personal stays in `~/Documents/Sunday Reset/`: `config.json`, `history/`, `state/`, `logs/`. If you choose Google Drive or OneDrive for history, past weeks go there instead. None of it is in this repo, and `.gitignore` keeps it that way.
+Everything personal stays in `~/Library/Application Support/Sunday Reset/`: `config.json`, `history/`, `state/`, `logs/`. Setup adds a shortcut at `~/Documents/Sunday Reset` so you can find it in Finder. It isn't stored in Documents itself because macOS blocks background jobs, like the weekly schedule, from writing there. If you choose Google Drive or OneDrive for history, past weeks go there instead. None of it is in this repo, and `.gitignore` keeps it that way.
 
 ## Safety
 
@@ -78,4 +78,4 @@ Everything personal stays in `~/Documents/Sunday Reset/`: `config.json`, `histor
 1. Install Claude Code and sign in.
 2. Run the three install commands above.
 3. Complete `/sunday-reset:setup`, including the unattended test.
-4. Confirm: `~/Documents/Sunday Reset/config.json` exists, setup-check shows all passes or clear fixes, the test email arrived, and `launchctl list | grep sundayreset` shows three jobs.
+4. Confirm: `~/Library/Application Support/Sunday Reset/config.json` exists, setup-check shows all passes or clear fixes, the test email arrived, and `launchctl list | grep sundayreset` shows three jobs.

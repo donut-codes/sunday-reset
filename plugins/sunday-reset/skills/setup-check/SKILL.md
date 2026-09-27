@@ -5,11 +5,11 @@ description: Verifies every Sunday Reset integration with a read test and a writ
 
 # Sunday Reset setup check
 
-Read `~/Documents/Sunday Reset/config.json` first. Run each check, record PASS, FAIL (with the exact fix), or SKIP (not configured). Never leave test data behind.
+Read `~/Library/Application Support/Sunday Reset/config.json` first. Run each check, record PASS, FAIL (with the exact fix), or SKIP (not configured). Never leave test data behind.
 
 | Check | How | Cleanup |
 |---|---|---|
-| Folder | `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh` shows `WRITE_OK` and `NO_OFFLOADED_FILES` | none |
+| Folder | `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh` shows `WRITE_OK` for `~/Library/Application Support/Sunday Reset` | none |
 | Python | `python3 --version` prints a version (the email is rendered with it). Fix: `xcode-select --install` | none |
 | Config | config.json parses and has `user.email` | none |
 | Calendar read | `calendar.sh events "<calendar_name>" <today> <today+7>` | none |

@@ -14,7 +14,8 @@ Arguments: `--dry-run` uses `${CLAUDE_PLUGIN_ROOT}/sample-data/` and writes noth
 - If a step fails, keep going and note it in the email under "Needs your OK"; the plan still goes out.
 
 ## 1. Gather
-- Config: `~/Documents/Sunday Reset/config.json`. If missing, stop and tell the user to run `/sunday-reset:setup`.
+- Config: `~/Library/Application Support/Sunday Reset/config.json`. If missing, stop and tell the user to run `/sunday-reset:setup`. If it's missing but `~/Documents/Sunday Reset/config.json` exists, the user set up before the folder moved: tell them to run `/sunday-reset:setup` once to move it (background runs can't read Documents).
+- `history.location` of `local` or the older `documents` both mean the Sunday Reset folder above.
 - Calendar: next 7 days from the configured calendar (`scripts/mac/calendar.sh events` or the connector). These are "busy" blocks.
 - Inbox: every `state/sweep-*.json` from the last 7 days (written by inbox-sweep).
 - Approvals: `state/pending-approvals.json`, updated by inbox-sweep from the user's replies.
