@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sunday Reset prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFF2EC; --sheet:#FFFFFF; --ink:#1D2A2B; --muted:#5B6967; --line:#D3DBD2;
+  --herb:#2D6A56; --herb-soft:#DCEBE3; --flag:#B97414; --flag-soft:#F7E8CF; --warn:#A33B2B;
+  --c-meal:#2D6A56; --c-meal-bg:#D6EADF; --c-move:#2F5D8A; --c-move-bg:#DCE7F3;
+  --c-admin:#B4472F; --c-admin-bg:#F6DDD5; --c-ok:#B97414; --c-ok-bg:#F7E8CF;
+  --c-fun:#7A3F7A; --c-fun-bg:#EEDDEE; --c-busy-bg:#E6E9E4;
+  --hero:#1F4A3E; --hero-ink:#F3F6F1;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Helvetica Neue", Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#131A1B; --sheet:#1A2324; --ink:#E6ECE8; --muted:#9BA8A5; --line:#2D3A3A;
+    --herb:#72B59C; --herb-soft:#1F3830; --flag:#E2A64B; --flag-soft:#3A2E17; --warn:#E07A68;
+    --c-meal:#86C7AE; --c-meal-bg:#1E3A31; --c-move:#8DB5E0; --c-move-bg:#1D2E42;
+    --c-admin:#EE9A85; --c-admin-bg:#40241D; --c-ok:#E8B560; --c-ok-bg:#3D3019;
+    --c-fun:#D6A3D6; --c-fun-bg:#3A2440; --c-busy-bg:#243031;
+    --hero:#183A31; --hero-ink:#EAF1EC;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#131A1B; --sheet:#1A2324; --ink:#E6ECE8; --muted:#9BA8A5; --line:#2D3A3A;
+  --herb:#72B59C; --herb-soft:#1F3830; --flag:#E2A64B; --flag-soft:#3A2E17; --warn:#E07A68;
+    --c-meal:#86C7AE; --c-meal-bg:#1E3A31; --c-move:#8DB5E0; --c-move-bg:#1D2E42;
+    --c-admin:#EE9A85; --c-admin-bg:#40241D; --c-ok:#E8B560; --c-ok-bg:#3D3019;
+    --c-fun:#D6A3D6; --c-fun-bg:#3A2440; --c-busy-bg:#243031;
+    --hero:#183A31; --hero-ink:#EAF1EC;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.55;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:28px 20px 80px}
+h1,h2,h3{font-family:var(--display);line-height:1.12;margin:0}
+h1{font-size:clamp(2.2rem,7vw,3.4rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.65rem;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.15rem;font-weight:700}
+p{margin:.6em 0}
+.muted{color:var(--muted)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--herb);outline-offset:2px}
+[tabindex="-1"]:focus{outline:none}
+.btn{appearance:none;border:2px solid var(--ink);background:var(--ink);color:var(--paper);padding:.7em 1.3em;border-radius:999px;font-weight:700;cursor:pointer;font-size:1rem}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.spread{justify-content:space-between}
+
+/* intro */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:18px;padding:30px 24px 26px;margin-top:4px}
+.hero .kicker{font-family:var(--display);font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem;opacity:.8}
+.hero h1{margin:8px 0 10px}
+.hero .lede{font-size:1.15rem;max-width:34em;margin:0}
+.hero .btn{background:var(--hero-ink);color:var(--hero);border-color:var(--hero-ink);margin-top:22px}
+.hero .meta{font-size:.9rem;opacity:.8;margin-top:10px}
+.weekviz{margin:26px 0 8px}
+.weekviz h2{font-size:1.25rem;margin-bottom:4px}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:14px}
+.wk .col{display:flex;flex-direction:column;gap:5px;min-width:0}
+.wk .dn{font-family:var(--display);font-weight:700;font-size:.85rem;color:var(--muted);text-align:center;padding-bottom:2px;border-bottom:3px solid var(--line)}
+.wk .dn.sun{color:var(--herb);border-bottom-color:var(--herb)}
+.chip{font-size:.72rem;line-height:1.25;padding:6px 6px;border-radius:7px;border-left:4px solid;overflow-wrap:anywhere}
+.chip.meal{background:var(--c-meal-bg);border-color:var(--c-meal)}
+.chip.move{background:var(--c-move-bg);border-color:var(--c-move)}
+.chip.admin{background:var(--c-admin-bg);border-color:var(--c-admin)}
+.chip.okc{background:var(--c-ok-bg);border-color:var(--c-ok)}
+.chip.fun{background:var(--c-fun-bg);border-color:var(--c-fun)}
+.chip.busy{background:var(--c-busy-bg);border-color:var(--line);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:14px;font-size:.88rem}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.gets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:26px 0}
+@media (max-width:560px){.gets{grid-template-columns:1fr}}
+.get{padding:14px 16px;border-radius:12px;border-top:5px solid;background:var(--sheet)}
+.get h3{font-size:1.02rem;margin-bottom:4px}
+.get p{margin:0;font-size:.95rem;color:var(--muted)}
+.get.meal{border-color:var(--c-meal)} .get.move{border-color:var(--c-move)} .get.admin{border-color:var(--c-admin)} .get.fun{border-color:var(--c-fun)}
+.how{counter-reset:how;list-style:none;padding:0;margin:10px 0 0}
+.how li{counter-increment:how;display:grid;grid-template-columns:2.2em 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.how li:last-child{border-bottom:0}
+.how li::before{content:counter(how);font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--herb)}
+@media (max-width:600px){
+  .wk{grid-template-columns:1fr;gap:0}
+  .wk .col{flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 0 8px 3.4em;border-bottom:1px solid var(--line);position:relative}
+  .wk .dn{position:absolute;left:0;top:13px;border-bottom:0;text-align:left;padding:0}
+  .wk .dn.sun{border-bottom:0}
+  .chip{font-size:.85rem;padding:5px 9px;overflow-wrap:normal}
+}
+
+/* progress */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);padding:10px 0 12px;margin:-10px 0 18px;border-bottom:1px solid var(--line)}
+.stepcount{color:var(--muted);font-size:.95rem}
+.pct{font-family:var(--display);font-weight:800;color:var(--herb)}
+.bar{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-top:8px}
+.bar b{display:block;height:100%;background:var(--herb);border-radius:5px;transition:width .35s ease}
+.done-banner{display:flex;align-items:center;gap:10px;background:var(--herb-soft);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-weight:700}
+
+/* questions */
+.q{margin:26px 0;border:0;padding:0}
+.q > legend,.q > label.lab{display:block;font-weight:700;margin-bottom:8px;font-size:1.05rem;padding:0}
+.hint{color:var(--muted);font-size:.93rem;margin:-4px 0 10px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choices label{position:relative}
+.choices input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.choices span{display:inline-block;padding:.5em 1em;border:2px solid var(--line);border-radius:18px;background:var(--sheet);cursor:pointer}
+.choices input:checked + span{border-color:var(--herb);background:var(--herb-soft);font-weight:700}
+.choices input:focus-visible + span{outline:3px solid var(--herb);outline-offset:2px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:.6em .75em;border:2px solid var(--line);border-radius:10px;background:var(--sheet)}
+textarea{min-height:5.5em;resize:vertical}
+.staple{display:grid;grid-template-columns:1.1fr 1.2fr 1fr;gap:8px;margin-bottom:8px}
+@media (max-width:560px){.staple{grid-template-columns:1fr}.staple + .staple{margin-top:14px}}
+.navrow{display:flex;justify-content:space-between;gap:12px;margin-top:34px;padding-top:18px;border-top:1px solid var(--line)}
+.hidden{display:none!important}
+
+/* email preview */
+.mail{background:var(--sheet);border:1px solid var(--line);border-radius:6px;margin-top:18px;overflow:hidden}
+.mailhead{padding:16px 20px;border-bottom:1px solid var(--line);font-size:.95rem;color:var(--muted)}
+.mailhead b{color:var(--ink)}
+.mailbody{padding:22px 20px 26px}
+.mailbody h2{margin-bottom:4px}
+.mailbody section{margin-top:30px}
+.mailbody section > h3{padding-bottom:6px;border-bottom:2px solid var(--ink);margin-bottom:10px}
+.tabs{display:inline-flex;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin-top:14px}
+.tabs button{border:0;background:transparent;padding:.45em 1.1em;font-weight:700;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.days{list-style:none;margin:0;padding:0}
+.days li{display:grid;grid-template-columns:4.2em 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.days li:last-child{border-bottom:0}
+.days .d{font-family:var(--display);font-weight:700}
+.days .d small{display:block;font-family:var(--body);font-weight:400;color:var(--muted);font-size:.8rem}
+.ev{display:block}
+.ev.busy{color:var(--muted)}
+.ev.new::before{content:"+ ";color:var(--herb);font-weight:700}
+.why{display:block;color:var(--muted);font-size:.88rem;margin-left:1.1em}
+.ok{border-left:5px solid var(--flag);background:var(--flag-soft);padding:12px 14px;margin:10px 0;border-radius:0 8px 8px 0}
+.ok p{margin:0 0 8px}
+.ok .row button{padding:.35em 1em;font-size:.93rem}
+.ok.done{border-left-color:var(--herb);background:var(--herb-soft)}
+.aisle{margin:14px 0 4px;font-weight:700;font-family:var(--display)}
+.items{list-style:none;margin:0;padding:0}
+.items li{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dotted var(--line)}
+.items li .rule{display:block;color:var(--muted);font-size:.85rem}
+.total{display:flex;justify-content:space-between;font-weight:700;padding-top:10px;margin-top:6px;border-top:2px solid var(--ink)}
+.note{font-size:.93rem;color:var(--muted)}
+.plain{list-style:none;padding:0;margin:0}
+.plain li{padding:6px 0;border-bottom:1px solid var(--line)}
+.plain li:last-child{border-bottom:0}
+.slider{max-width:26em}
+.slider input[type=range]{width:100%;accent-color:var(--herb);height:28px;margin:4px 0 0}
+.slider output{display:block;font-weight:700;color:var(--herb);margin-top:2px}
+.slider .ticks{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted)}
+.support summary{cursor:pointer;font-weight:700;color:var(--herb)}
+.storehead{margin:18px 0 2px;font-family:var(--display);font-weight:800;font-size:1.05rem}
+.storehead small{font-family:var(--body);font-weight:400;color:var(--muted);font-size:.85rem;margin-left:6px}
+/* way back to the portfolio */
+.home{display:inline-block;color:var(--muted);text-decoration:none;font-weight:700;font-size:.95rem;padding:6px 0}
+.home:hover{color:var(--herb);text-decoration:underline;text-underline-offset:3px}
+.home-top{margin:0 0 10px}
+.sitefoot{max-width:720px;margin:-48px auto 0;padding:16px 20px 36px;border-top:1px solid var(--line)}
+.next{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:20px 20px 6px;margin:0 0 34px}
+.next h2{font-size:1.35rem;margin-bottom:6px}
+.next .how{margin-top:6px}
+.next a{color:var(--herb);font-weight:700}
+.next code{font-size:.9em;background:var(--herb-soft);padding:1px 5px;border-radius:5px}
+.dl{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
+.dl small{color:var(--muted);font-size:.85rem}
+.dlmsg{color:var(--herb);font-weight:700;font-size:.9rem}
+/* the download column is taller than the back button, so don't let it stretch */
+.navrow-dl{align-items:flex-start}
+@media (max-width:560px){
+  .navrow-dl{flex-direction:column-reverse;align-items:stretch;gap:14px}
+  .navrow-dl .dl{align-items:stretch;text-align:center}
+}
+@media (prefers-reduced-motion: no-preference){
+  .screen{animation:in .28s ease-out}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<footer class="sitefoot"><a class="home" href="https://cameroncrump.com/">&larr; cameroncrump.com</a></footer>
+
+<script>
+(function(){
+const app = document.getElementById('app');
+
+// ---------- state ----------
+const A = {
+  name:"", storage:"documents", style:"both", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
+  computer:"mac", calendarApp:"apple", todoApp:"apple",
+  store:"", store2:"", store3:"", storeRule:"main_first", mode:"pickup", size:"per_oz", produce:"organic_unless", threshold:"50",
+  price:"balanced", confirmBrands:true,
+  staples:[{item:"",brand:"",rule:"flexible"},{item:"",brand:"",rule:"flexible"},{item:"",brand:"",rule:"flexible"}],
+  bundleName:"", bundleItems:"",
+  proteinMode:"rotate", proteins:["chicken","salmon"],
+  hasPet:"yes", petName:"", petType:"dog", petMeds:"yes", grooming:"home", groomWeeks:"4",
+  workDays:"4", split:"half", workTime:"morning", easyAfterSleep:"yes",
+  eventsOn:"yes", city:"", eventTypes:["music","movies","tv"], radius:"30",
+  hobbiesOn:"yes", hobbies:[{name:"",freq:"weekly"},{name:"",freq:"monthly"},{name:"",freq:"biweekly"}]
+};
+const decisions = {};
+let step = -1; // -1 intro, 0..7 setup steps, 8 your first Sunday
+let view = "short";
+
+// ---------- helpers ----------
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function radios(key, opts){
+  return `<div class="choices" role="radiogroup">` + opts.map(([v,l]) =>
+    `<label><input type="radio" name="${key}" value="${esc(v)}" ${A[key]===v?'checked':''}><span>${esc(l)}</span></label>`).join('') + `</div>`;
+}
+function checks(key, opts){
+  return `<div class="choices">` + opts.map(([v,l]) =>
+    `<label><input type="checkbox" name="${key}" value="${esc(v)}" ${A[key].includes(v)?'checked':''}><span>${esc(l)}</span></label>`).join('') + `</div>`;
+}
+function text(key, ph){ return `<input type="text" name="${key}" value="${esc(A[key])}" placeholder="${esc(ph||'')}">`; }
+const CAL = {apple:"Apple Calendar", google:"Google Calendar", outlook:"Outlook"};
+const TODO = {apple:"Reminders", google:"Google Tasks", microsoft:"Microsoft To Do", todoist:"Todoist"};
+const STORE_LABEL = {documents:"your Documents folder, in Sunday Reset", drive:"Google Drive, in the Sunday Reset folder", onedrive:"OneDrive, in the Sunday Reset folder"};
+const SUPPORT = [
+  [/whole\s*foods/i, "Live prices and a saved list"],
+  [/target/i, "Live prices and stock"],
+  [/andronico/i, "Live prices and sales"],
+  [/trader\s*joe/i, "Some live prices"]
+];
+function supportFor(name){ for(const [re,t] of SUPPORT){ if(re.test(name)) return t; } return "List sorted by aisle, prices estimated"; }
+function stores(){ return [A.store, A.store2, A.store3].map(x=>x.trim()).filter(Boolean); }
+function mainStore(){ return stores()[0] || ""; }
+function greeting(){
+  const t = runTimeLabel(); const h = parseInt(t,10) % 12 + (/PM/.test(t) ? 12 : 0);
+  const part = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  const nm = A.name.trim(); return nm ? `${part}, ${nm}.` : `${part}.`;
+}
+function thrLabel(v){
+  v = parseInt(v,10);
+  if(v === 0) return "Only if organic costs the same";
+  if(v >= 100) return "Up to double the price";
+  return `Up to ${v}% more than conventional`;
+}
+function replyByLabel(){ // the real email says "Replies by ..." 3 hours after it's sent
+  const t = runTimeLabel(); const [hm, ap] = t.split(" "); let [h, m] = hm.split(":").map(Number);
+  h = (h % 12) + (ap === "PM" ? 12 : 0); h = (h + 3) % 24;
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2,"0")} ${h >= 12 ? "PM" : "AM"}`;
+}
+function runTimeLabel(){
+  if(A.runTime !== "other") return A.runTime;
+  const [h,m] = (A.customTime||"07:30").split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM"; const hh = ((h + 11) % 12) + 1;
+  return `${hh}:${String(m).padStart(2,"0")} ${ap}`;
+}
+function cap(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+function money(n){ return "$"+n.toFixed(2); }
+
+function nextSunday(){
+  const d = new Date(); d.setHours(0,0,0,0);
+  const add = (7 - d.getDay()) % 7 || 7; d.setDate(d.getDate()+add); return d;
+}
+const SUN = nextSunday();
+const fmt = (d,o) => d.toLocaleDateString('en-US', o);
+function dayDate(i){ const d=new Date(SUN); d.setDate(d.getDate()+i); return d; } // 0=Sun .. 6=Sat
+
+// ---------- steps ----------
+const STEPS = [
+  { title:"The basics", body:() => `
+    <div class="q"><label class="lab" for="f-name">What should we call you? <span class="muted" style="font-weight:400">(optional)</span></label>${text('name','First name')}</div>
+    <fieldset class="q"><legend>Which day should your weekly plan arrive?</legend>
+      <p class="hint">Early enough to review it before you shop.</p>
+      ${radios('runDay',[["Friday","Friday"],["Saturday","Saturday"],["Sunday","Sunday"]])}</fieldset>
+    <fieldset class="q"><legend>What time?</legend>
+      ${radios('runTime',[["6:00 AM","6am"],["7:00 AM","7am"],["8:00 AM","8am"],["9:00 AM","9am"],["6:00 PM","6pm"],["other","Other time"]])}
+      <div id="ct" class="${A.runTime==='other'?'':'hidden'}" style="margin-top:12px;max-width:12em">
+        <label class="lab" for="f-ct" style="font-weight:400">Pick a time</label>
+        <input type="time" id="f-ct" name="customTime" value="${esc(A.customTime)}" step="900">
+      </div></fieldset>
+    <fieldset class="q"><legend>How much detail in the email?</legend>
+      ${radios('style',[["short","Short: plan and to-dos"],["full","Full: plan plus the reasons"],["both","Send both for now"]])}</fieldset>` },
+
+  { title:"Your setup", body:() => `
+    <p class="muted">Works on a Mac or a Windows PC, with the calendar and to-do apps you already use.</p>
+    <fieldset class="q"><legend>Which computer will run it?</legend>
+      <p class="hint">It runs on a schedule, so pick the one that's usually on.</p>
+      ${radios('computer',[["mac","Mac"],["windows","Windows PC"]])}</fieldset>
+    <fieldset class="q"><legend>Which calendar do you use?</legend>
+      ${radios('calendarApp',[["apple","Apple Calendar"],["google","Google Calendar"],["outlook","Outlook"]])}</fieldset>
+    <fieldset class="q"><legend>Where do your to-dos go?</legend>
+      ${radios('todoApp',[["apple","Apple Reminders"],["google","Google Tasks"],["microsoft","Microsoft To Do"],["todoist","Todoist"]])}</fieldset>
+    <fieldset class="q"><legend>Where should your weekly history live?</legend>
+      <p class="hint">Past weeks are saved so you can repeat a favorite one.</p>
+      ${radios('storage',[["documents","Documents folder on this computer"],["drive","Google Drive"],["onedrive","OneDrive"]])}</fieldset>` },
+
+  { title:"How you shop", body:() => `
+    <div class="q"><label class="lab">Your main store</label>${text('store','Whole Foods, Safeway, Trader Joe\u2019s...')}</div>
+    <div class="q"><label class="lab">Other stores you use <span class="muted" style="font-weight:400">(optional, up to 2)</span></label>
+      <div class="staple" style="grid-template-columns:1fr 1fr">${text('store2','Second store')}${text('store3','Third store')}</div></div>
+    <fieldset class="q"><legend>If you use more than one store...</legend>
+      ${radios('storeRule',[["main_first","Main store first, others only if needed"],["cheapest","Put each item where it's cheapest"],["category","Split by category"]])}</fieldset>
+    <details class="q support"><summary>Which stores work best?</summary>
+      <p class="hint" style="margin-top:8px">Any store gets a list sorted by aisle. These have been tested for live prices so far:</p>
+      <ul class="plain">
+        <li><b>Whole Foods:</b> prices, sales, stock, and a saved list on your account</li>
+        <li><b>Target:</b> prices, price per ounce, and local stock. Saved list not tested yet</li>
+        <li><b>Andronico's:</b> prices and sales, no sign-in needed. Saved list needs you signed in</li>
+        <li><b>Trader Joe's:</b> some prices. Their site doesn't show every product</li>
+      </ul></details>
+    <fieldset class="q"><legend>How do you usually get groceries?</legend>
+      ${radios('mode',[["pickup","Pickup"],["delivery","Delivery"],["instore","I walk the store"]])}</fieldset>
+    <fieldset class="q"><legend>When there are different sizes...</legend>
+      ${radios('size',[["per_oz","Best price per ounce"],["usual","Stick to my usual size"],["per_oz_flag","Best per ounce, but ask if the size changes"]])}</fieldset>
+    <fieldset class="q"><legend>Produce</legend>
+      ${radios('produce',[["organic","Always organic"],["conventional","Conventional is fine"],["organic_unless","Organic unless it costs a lot more"]])}
+      <div id="thr" class="${A.produce==='organic_unless'?'':'hidden'}" style="margin-top:12px">
+        <p class="hint">How much more is too much?</p>
+        <div class="slider">
+          <input type="range" id="f-thr" name="threshold" min="0" max="100" step="5" value="${esc(A.threshold)}" aria-describedby="thr-out">
+          <output id="thr-out" for="f-thr">${thrLabel(A.threshold)}</output>
+          <div class="ticks" aria-hidden="true"><span>Same price</span><span>Double</span></div>
+        </div></div></fieldset>
+    <fieldset class="q"><legend>For everything else</legend>
+      ${radios('price',[["value","Save money first"],["balanced","Balanced"],["premium","Quality first"]])}
+      <label class="row" style="margin-top:12px"><input type="checkbox" name="confirmBrands" ${A.confirmBrands?'checked':''}> Ask me before picking a brand I haven't approved</label></fieldset>` },
+
+  { title:"Your usuals", body:() => `
+    <p class="muted">A few things you buy most weeks. Leave rows blank if you like.</p>
+    <div class="q">
+      ${A.staples.map((s,i)=>`
+        <div class="staple" data-i="${i}">
+          <input type="text" data-k="item" aria-label="Item ${i+1}" value="${esc(s.item)}" placeholder="${['Crackers','Pasta','Milk'][i]}">
+          <input type="text" data-k="brand" aria-label="Brand for item ${i+1}" value="${esc(s.brand)}" placeholder="${['Simple Mills','Brami or De Cecco','Lactaid 2%'][i]}">
+          <select data-k="rule" aria-label="Rule for item ${i+1}">
+            ${[["locked","Only this brand"],["flexible","This brand, swap if out"],["sale","Whichever is on sale"],["cheapest","Cheapest option"]].map(([v,l])=>`<option value="${v}" ${s.rule===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>`).join('')}
+    </div>
+    <div class="q"><label class="lab">Anything you always buy together?</label>
+      <p class="hint">Example: pasta night is penne, arrabbiata sauce, onion, and garlic. The list adds the whole set so nothing gets forgotten.</p>
+      ${text('bundleName','Name it, like "Pasta night"')}
+      <div style="height:8px"></div>
+      ${text('bundleItems','Items, separated by commas')}</div>` },
+
+  { title:"Meals", body:() => `
+    <fieldset class="q"><legend>Which proteins do you cook with?</legend>
+      ${checks('proteins',[["chicken","Chicken"],["steak","Steak"],["salmon","Salmon"],["ground turkey","Ground turkey"],["shrimp","Shrimp"],["tofu","Tofu"]])}</fieldset>
+    <fieldset class="q"><legend>How should the week's protein get picked?</legend>
+      ${radios('proteinMode',[["rotate","Rotate through them"],["ask","Ask me each week"]])}</fieldset>` },
+
+  { title:"Pets", body:() => `
+    <fieldset class="q"><legend>Do you have a pet?</legend>${radios('hasPet',[["yes","Yes"],["no","No"]])}</fieldset>
+    <div id="petq" class="${A.hasPet==='yes'?'':'hidden'}">
+      <div class="q"><label class="lab">Pet's name</label>${text('petName','Name')}</div>
+      <fieldset class="q"><legend>What kind?</legend>${radios('petType',[["dog","Dog"],["cat","Cat"],["other","Other"]])}</fieldset>
+      <fieldset class="q"><legend>Monthly meds, like flea or heartworm?</legend>${radios('petMeds',[["yes","Yes"],["no","No"]])}</fieldset>
+      <fieldset class="q"><legend>What does grooming look like?</legend>
+        ${radios('grooming',[["none","Not needed"],["home","Bath and brush at home"],["groomer","Groomer appointments"]])}
+        <div id="gw" class="${A.grooming==='none'?'hidden':''}" style="margin-top:12px"><p class="hint">About how often?</p>
+        ${radios('groomWeeks',[["2","Every 2 weeks"],["4","Every 4 weeks"],["6","Every 6 weeks"],["8","Every 8 weeks"]])}</div></fieldset>
+    </div>` },
+
+  { title:"Workouts", body:() => `
+    <fieldset class="q"><legend>How many workouts a week?</legend>
+      ${radios('workDays',[["0","None"],["2","2"],["3","3"],["4","4"],["5","5"],["6","6"]])}</fieldset>
+    <fieldset class="q"><legend>Studio classes or home workouts?</legend>
+      ${radios('split',[["studio","All studio"],["half","A mix"],["home","All at home"]])}</fieldset>
+    <fieldset class="q"><legend>Best time of day?</legend>
+      ${radios('workTime',[["morning","Morning"],["lunch","Lunch"],["evening","Evening"]])}</fieldset>
+    <fieldset class="q"><legend>If your watch shows a rough night of sleep, go easier that day?</legend>
+      ${radios('easyAfterSleep',[["yes","Yes"],["no","No, keep the plan"]])}</fieldset>` },
+
+  { title:"Extras (optional)", body:() => `
+    <p class="muted">Two optional sections for the fun parts of the week. Turn either one off if you don't want it.</p>
+    <fieldset class="q"><legend>Show fun things coming up near you?</legend>
+      <p class="hint">Concerts, plays, new movies and shows, over the next month.</p>
+      ${radios('eventsOn',[["yes","Yes"],["no","No thanks"]])}</fieldset>
+    <div id="evq" class="${A.eventsOn==='yes'?'':'hidden'}">
+      <div class="q"><label class="lab">Your city</label>${text('city','San Francisco, Portland...')}</div>
+      <fieldset class="q"><legend>What are you into?</legend>
+        ${checks('eventTypes',[["music","Concerts"],["theater","Theater"],["comedy","Comedy"],["movies","New movies"],["tv","New TV seasons"],["sports","Sports"],["food","Food and markets"],["museums","Museums and art"]])}</fieldset>
+      <fieldset class="q"><legend>How far will you go?</legend>
+        ${radios('radius',[["city","In my city"],["30","Within 30 minutes"],["60","Within an hour"]])}</fieldset>
+    </div>
+    <fieldset class="q"><legend>Keep track of your hobbies?</legend>
+      <p class="hint">It finds open time for them and nudges you when one has slipped.</p>
+      ${radios('hobbiesOn',[["yes","Yes"],["no","No thanks"]])}</fieldset>
+    <div id="hbq" class="q ${A.hobbiesOn==='yes'?'':'hidden'}">
+      ${A.hobbies.map((h,i)=>`
+        <div class="staple hobby" data-h="${i}" style="grid-template-columns:1.6fr 1fr">
+          <input type="text" data-hk="name" aria-label="Hobby ${i+1}" value="${esc(h.name)}" placeholder="${['Guitar','Hiking','Pottery class'][i]}">
+          <select data-hk="freq" aria-label="How often for hobby ${i+1}">
+            ${[["weekly","Every week"],["biweekly","Every other week"],["monthly","Once a month"]].map(([v,l])=>`<option value="${v}" ${h.freq===v?'selected':''}>${l}</option>`).join('')}
+          </select>
+        </div>`).join('')}
+    </div>` }
+];
+
+// ---------- sample week (fake data, same for every tester) ----------
+const BUSY = [
+  {day:2, slot:"evening", label:"Dinner with friends, 6:30 PM"},
+  {day:3, slot:"morning", label:"Early call, 7:30 AM"},
+  {day:4, slot:"lunch", label:"Dentist, 12:15 PM"},
+  {day:6, slot:"morning", label:"Farmers market, 9:00 AM"}
+];
+const INBOX = [
+  {day:3, text:"Streaming free trial converts to paid ($15.99/mo)", kind:"trial"},
+  {day:4, text:"Electric bill due ($84.20)", kind:"bill"},
+  {day:2, text:"Package arriving: phone case", kind:"delivery"}
+];
+const SLOT_TIME = {morning:"7:00 AM", lunch:"12:00 PM", evening:"6:00 PM"};
+
+const CATALOG = [
+  [/onion/i,1.19,"Produce"],[/garlic/i,0.91,"Produce"],[/spinach/i,3.49,"Produce"],[/banana/i,0.25,"Produce"],
+  [/lemon/i,0.79,"Produce"],[/broccoli/i,2.49,"Produce"],[/avocado/i,1.50,"Produce"],[/tomato(?!.*sauce)/i,2.99,"Produce"],
+  [/chicken/i,9.99,"Meat and seafood"],[/steak/i,15.99,"Meat and seafood"],[/salmon/i,12.99,"Meat and seafood"],
+  [/turkey/i,7.49,"Meat and seafood"],[/shrimp/i,11.99,"Meat and seafood"],[/tofu/i,2.99,"Dairy and fridge"],
+  [/milk/i,4.99,"Dairy and fridge"],[/egg/i,5.49,"Dairy and fridge"],[/yogurt/i,5.99,"Dairy and fridge"],[/cheese|parm/i,6.49,"Dairy and fridge"],
+  [/pasta|penne|spaghetti|rigatoni/i,2.43,"Pantry"],[/sauce|marinara|arrabbiata/i,9.19,"Pantry"],[/rice/i,3.99,"Pantry"],
+  [/cracker/i,7.99,"Snacks"],[/chip/i,4.49,"Snacks"],[/bar/i,5.79,"Snacks"],[/coffee/i,11.99,"Pantry"],[/bread/i,5.49,"Bakery"]
+];
+const AISLE_ORDER = ["Produce","Bakery","Meat and seafood","Dairy and fridge","Pantry","Snacks","Other"];
+function lookup(name){
+  for(const [re,p,a] of CATALOG){ if(re.test(name)) return {price:p, aisle:a}; }
+  return {price:4.99, aisle:"Other"};
+}
+
+function build(){
+  const staples = A.staples.filter(s => s.item.trim());
+  const oks = [];
+  const items = [];
+
+  staples.forEach((s,i) => {
+    const {price, aisle} = lookup(s.item + " " + s.brand);
+    const brand = s.brand.trim();
+    let label = (brand ? brand + " " : "") + s.item.trim();
+    let why = {locked:"Only this brand", flexible:"Your usual brand", sale:"Whichever is on sale", cheapest:"Cheapest option"}[s.rule];
+    if(s.rule === "sale" && /\bor\b/i.test(brand)){
+      const opts = brand.split(/\s+or\s+/i); label = opts[opts.length-1] + " " + s.item.trim();
+      why = `${opts[opts.length-1]} is on sale this week, so it beat ${opts[0]}`;
+    }
+    items.push({name:label, price, aisle, why});
+    if(i === 0 && s.rule === "flexible" && brand){
+      oks.push({id:"swap-"+i, text:`Your usual ${esc(label)} is out of stock at ${esc(mainStore()||"your store")}. I picked the store brand instead (${money(price-1.5)}, $1.50 less).`, keep:"Keep store brand", swap:"Skip it this week"});
+    }
+  });
+
+  let bundle = [];
+  if(A.bundleItems.trim()){
+    bundle = A.bundleItems.split(",").map(x=>x.trim()).filter(Boolean);
+    bundle.forEach(b => {
+      if(items.some(it => it.name.toLowerCase().includes(b.toLowerCase()))) return;
+      const re = (CATALOG.find(([r]) => r.test(b)) || [])[0];
+      const same = re && items.find(it => re.test(it.name));
+      if(same){ same.name += ` (${b})`; same.why += `, and part of ${A.bundleName.trim() || "your bundle"}`; return; }
+      const {price, aisle} = lookup(b);
+      items.push({name:cap(b), price, aisle, why:`Part of ${A.bundleName.trim() || "your bundle"}`});
+    });
+  }
+
+  // protein
+  let protein = null;
+  if(A.proteins.length){
+    protein = A.proteins[0];
+    const {price, aisle} = lookup(protein);
+    items.push({name:cap(protein)+ (protein==="tofu"?"":", about 1.5 lb"), price, aisle, why: A.proteinMode==="rotate" ? "This week's turn in your protein rotation" : "Picked for this week, needs your OK"});
+    if(A.proteinMode === "ask" && A.proteins.length > 1){
+      oks.push({id:"protein", text:`I planned the batch cook around ${esc(protein)}. Want ${esc(A.proteins[1])} instead?`, keep:`Keep ${esc(protein)}`, swap:`Switch to ${esc(A.proteins[1])}`});
+    }
+  }
+
+  // produce rule example
+  const onion = items.find(it => /onion/i.test(it.name));
+  if(A.produce === "organic_unless"){
+    const t = parseInt(A.threshold,10);
+    const lim = t === 0 ? "and you only buy organic at the same price" : `over your ${t}% limit`;
+    if(onion){
+      if(58 > t){ onion.name = "Yellow onion, conventional"; onion.why = `Organic was 58% more, ${lim}`;
+        oks.push({id:"onion", text:`Organic onion costs 58% more than conventional this week, ${lim}, so I picked conventional.`, keep:"Keep conventional", swap:"Get organic anyway"}); }
+      else { onion.name = "Yellow onion, organic"; onion.price = 1.88; onion.why = `Organic was 58% more, under your ${t}% limit`; }
+    }
+  } else if(onion){ onion.name = "Yellow onion, " + (A.produce==="organic"?"organic":"conventional"); if(A.produce==="organic") onion.price=1.88; }
+  items.forEach(it => { if(/garlic/i.test(it.name) && A.produce !== "conventional"){ it.name = "Garlic, organic"; } });
+
+  // pet food
+  if(A.hasPet === "yes"){
+    const pn = A.petName.trim() || "your pet";
+    items.push({name:`${A.petType==="cat"?"Cat":"Dog"} food for ${pn}`, price:0, aisle:"Other", why:"Reorder, bag runs out in about 5 days", reorder:true});
+  }
+
+  if(A.price === "value" && staples.length === 0){ items.push({name:"Store brand crackers", price:3.29, aisle:"Snacks", why:"Save money first"}); }
+  if(!staples.length && !bundle.length){
+    [["Spinach"],["Eggs, dozen"],["Bananas, 6"]].forEach(([n])=>{ const l=lookup(n); items.push({name:n, price: n.startsWith("Bananas")?1.50:l.price, aisle:l.aisle, why:"A weekly basic, change anytime"}); });
+  }
+
+  // workouts
+  const n = parseInt(A.workDays,10);
+  const order = [1,3,5,2,4,6,0];
+  const workouts = [];
+  const skipped = [];
+  for(const d of order){
+    if(workouts.length >= n) break;
+    const clash = BUSY.find(b => b.day===d && b.slot===A.workTime);
+    if(clash){ skipped.push({day:d, reason:clash.label}); continue; }
+    if(d === 0 && A.workTime !== "evening"){ continue; }
+    workouts.push(d);
+  }
+  const studioCount = A.split==="studio" ? workouts.length : A.split==="home" ? 0 : Math.ceil(workouts.length/2);
+  workouts.sort((a,b)=>a-b);
+
+  // pet schedule
+  const petEvents = [];
+  if(A.hasPet === "yes"){
+    const pn = A.petName.trim() || "your pet";
+    if(A.petMeds === "yes") petEvents.push({day:3, text:`Monthly meds for ${pn}`});
+    if(A.grooming === "home") petEvents.push({day:6, text:`Bath and brush for ${pn}, due this week (every ${A.groomWeeks} weeks)`});
+    if(A.grooming === "groomer") oks.push({id:"groomer", text:`${esc(pn)} is due for the groomer this week (every ${esc(A.groomWeeks)} weeks). Want a reminder to book Tuesday morning?`, keep:"Yes, remind me", swap:"Not this week"});
+  }
+
+  // hobbies
+  const hobbyEvents = [];
+  let hobbyNudge = null;
+  const hobbies = A.hobbiesOn==="yes" ? A.hobbies.filter(h=>h.name.trim()) : [];
+  if(hobbies.length){
+    const freeEvenings = [1,2,3,4,5].filter(d => !BUSY.some(b=>b.day===d && b.slot==="evening") && !(A.workTime==="evening" && workouts.includes(d)));
+    let fi = 0;
+    hobbies.forEach((h,i) => {
+      const nm = h.name.trim();
+      if(h.freq === "weekly" && fi < freeEvenings.length){
+        hobbyEvents.push({day:freeEvenings[fi++], text:`Time for ${nm}, 7:00 PM`, why:`You wanted ${nm} every week, and this evening is open`});
+      } else if(h.freq === "biweekly"){
+        hobbyEvents.push({day:6, text:`Time for ${nm}, 2:00 PM`, why:`Every other week, and it's this week's turn`});
+      } else if(h.freq === "monthly" && !hobbyNudge){
+        hobbyNudge = nm;
+        oks.push({id:"hobby-"+i, text:`It's been 5 weeks since you made time for ${esc(nm)}, and you wanted it once a month. Saturday afternoon is open. Want me to block 2 hours?`, keep:"Block Saturday", swap:"Skip this month"});
+      }
+    });
+  }
+
+  // events
+  const SAMPLE_EVENTS = [
+    {type:"music", off:5, text:"A touring indie band at a small club, 8:00 PM"},
+    {type:"tv", off:3, text:"A new season of a popular drama starts streaming"},
+    {type:"movies", off:5, text:"A much-anticipated sequel opens in theaters"},
+    {type:"theater", off:13, text:"Opening week of a new play downtown"},
+    {type:"comedy", off:11, text:"Stand-up night with a comic from a recent special"},
+    {type:"sports", off:6, text:"Home game for the local team, 1:00 PM"},
+    {type:"food", off:14, text:"A weekend night market with food trucks"},
+    {type:"museums", off:18, text:"Free admission day at a major museum"},
+    {type:"music", off:22, text:"An outdoor concert in the park"},
+    {type:"movies", off:26, text:"An award-season drama opens in limited release"}
+  ];
+  const TYPE_LABEL = {music:"concerts",tv:"new TV seasons",movies:"new movies",theater:"theater",comedy:"comedy",sports:"sports",food:"food and markets",museums:"museums and art"};
+  const events = A.eventsOn==="yes" ? SAMPLE_EVENTS.filter(e => A.eventTypes.includes(e.type)).sort((a,b)=>a.off-b.off).slice(0,5)
+    .map(e => { const d = new Date(SUN); d.setDate(d.getDate()+e.off); return {...e, date:d, why:`Matches your interest in ${TYPE_LABEL[e.type]}`}; }) : [];
+  const soon = events.find(e => e.off <= 6 && e.type !== "tv" && e.type !== "movies") || events.find(e => e.off <= 6 && e.type !== "tv");
+  if(soon){
+    oks.push({id:"event", text:`${esc(soon.text.split(",")[0])} is ${fmt(soon.date,{weekday:'long'})}. Want it on your calendar?`, keep:"Add it", swap:"Pass"});
+  }
+
+  // trial as a needs-ok
+  oks.push({id:"trial", text:"A streaming free trial turns into $15.99/month on Wednesday. Should I add a reminder to cancel it Tuesday?", keep:"Add the reminder", swap:"I'm keeping it"});
+
+  // grocery timing
+  const shopLabel = A.mode==="pickup" ? `Grocery pickup at ${mainStore()||"your store"}, 10:30 AM` : A.mode==="delivery" ? `Grocery delivery window, 10:00 to 11:00 AM` : `Grocery run at ${mainStore()||"your store"}, 10:00 AM`;
+
+  // days
+  const days = [];
+  for(let d=0; d<7; d++){
+    const evs = [];
+    BUSY.filter(b=>b.day===d).forEach(b => evs.push({busy:true, text:b.label}));
+    if(d===0){
+      evs.push({text:shopLabel, why:`Your plan arrives ${A.runDay} at ${runTimeLabel()}, so there's time to review the list first`});
+      evs.push({text:"Batch cook, 2:00 to 3:30 PM", why: protein ? `Five portions built around ${protein}` : "Five portions for the week"});
+    }
+    const wi = workouts.indexOf(d);
+    if(wi > -1){
+      const studio = wi < studioCount;
+      evs.push({text:`${studio?"Studio class":"Home strength session"}, ${SLOT_TIME[A.workTime]}`,
+        why: A.easyAfterSleep==="yes" ? "Swaps to an easy session if your watch shows a rough night" : "Stays on the plan whatever your sleep looks like"});
+    }
+    skipped.filter(s=>s.day===d).forEach(s => evs.push({skip:true, text:`No workout today`, why:`${s.reason} overlaps your usual ${A.workTime} slot`}));
+    petEvents.filter(p=>p.day===d).forEach(p => evs.push({text:p.text, why:"From your pet care settings"}));
+    INBOX.filter(x=>x.day===d).forEach(x => evs.push({text:x.text, why:"Found in your inbox"}));
+    hobbyEvents.filter(h=>h.day===d).forEach(h => evs.push({text:h.text, why:h.why}));
+    days.push({d, evs});
+  }
+
+  // assign stores
+  const st = stores(); const main = st[0] || "Your store";
+  items.forEach(it => { it.store = main; });
+  if(st.length > 1){
+    if(A.storeRule === "cheapest"){
+      items.filter(it => it.aisle==="Pantry" || it.aisle==="Snacks").forEach(it => { it.store = st[1]; it.saved = +(it.price*0.15).toFixed(2); it.price = +(it.price-it.saved).toFixed(2); it.why = `About ${money(it.saved)} cheaper at ${st[1]}`; });
+    } else if(A.storeRule === "category"){
+      items.filter(it => it.aisle==="Pantry" || it.aisle==="Snacks").forEach(it => { it.store = st[1]; it.why = `Pantry and snacks come from ${st[1]}`; });
+      if(st[2]) items.filter(it => it.aisle==="Other").forEach(it => { it.store = st[2]; it.why = `Household and pet items come from ${st[2]}`; });
+    }
+  }
+  // group list by store, then aisle
+  const byStore = {};
+  items.forEach(it => { const g = byStore[it.store] = byStore[it.store] || {}; (g[it.aisle] = g[it.aisle] || []).push(it); });
+  const byAisle = {};
+  items.forEach(it => { (byAisle[it.aisle] = byAisle[it.aisle] || []).push(it); });
+  const total = items.reduce((s,it)=>s+(it.reorder?0:it.price),0);
+
+  return {days, byAisle, byStore, total, oks, items, workouts, studioCount, events, hobbies, hobbyNudge};
+}
+
+// ---------- render ----------
+function render(){
+  if(step === -1){
+    const WK = [
+      ["Sun",[["meal","Grocery pickup"],["meal","Batch cook"]]],
+      ["Mon",[["move","Studio class"]]],
+      ["Tue",[["busy","Dinner plans"],["admin","Package arrives"]]],
+      ["Wed",[["move","Home workout"],["okc","Trial ends: cancel?"],["admin","Pet meds"]]],
+      ["Thu",[["admin","Electric bill due"]]],
+      ["Fri",[["move","Studio class"],["fun","Concert nearby"]]],
+      ["Sat",[["busy","Farmers market"],["fun","Guitar, 2 PM"]]]
+    ];
+    app.innerHTML = `<div class="screen intro">
+      <a class="home home-top" href="https://cameroncrump.com/">&larr; cameroncrump.com</a>
+      <section class="hero">
+        <div class="kicker">Prototype</div>
+        <h1>Sunday Reset</h1>
+        <p class="lede">Answer a few questions once. Every Sunday morning you get one email with your whole week planned and already on your calendar.</p>
+        <button class="btn" data-go="0">Start setup</button>
+        <p class="meta">About 5 minutes. Sample calendar and inbox, so nothing touches your accounts.</p>
+      </section>
+
+      <section class="weekviz" aria-label="Example of a planned week">
+        <h2>What a planned week looks like</h2>
+        <p class="muted" style="margin:0">It works around what's already on your calendar, shown in gray.</p>
+        <div class="wk" aria-hidden="true">${WK.map(([d,chips])=>`<div class="col"><div class="dn ${d==='Sun'?'sun':''}">${d}</div>${chips.map(([c,t])=>`<div class="chip ${c}">${t}</div>`).join('')}</div>`).join('')}</div>
+        <div class="legend">
+          <span><i style="background:var(--c-meal)"></i>Meals and groceries</span>
+          <span><i style="background:var(--c-move)"></i>Workouts</span>
+          <span><i style="background:var(--c-admin)"></i>Bills, pets, errands</span>
+          <span><i style="background:var(--c-ok)"></i>Needs your OK</span>
+          <span><i style="background:var(--c-fun)"></i>Fun</span>
+        </div>
+      </section>
+
+      <section class="gets">
+        <div class="get meal"><h3>Dinners and groceries</h3><p>A meal plan and a list sorted by aisle at your store, using your brands and your budget rules.</p></div>
+        <div class="get move"><h3>Workouts that fit</h3><p>Sessions placed in open slots, and eased up after a rough night of sleep.</p></div>
+        <div class="get admin"><h3>Nothing slips</h3><p>Bills, renewals, free trials, deliveries, and pet care pulled from your inbox and scheduled.</p></div>
+        <div class="get fun"><h3>Room to live a little</h3><p>Hobby time protected, plus concerts, shows, and events near you.</p></div>
+      </section>
+
+      <section>
+        <h2 style="font-size:1.25rem">How it works</h2>
+        <ol class="how">
+          <li><span><b>Set it up once.</b> Tell it how you shop, eat, work out, and what you're into.</span></li>
+          <li><span><b>Get your plan when you want it.</b> Sunday morning by default. Everything is already on your calendar and your to-do list.</span></li>
+          <li><span><b>Reply to approve anything it wasn't sure about.</b> You have 3 hours; after that its picks stand. It learns your answers for next time.</span></li>
+        </ol>
+      </section>
+
+      <div class="navrow" style="justify-content:flex-end"><button class="btn" data-go="0">Start setup</button></div>
+    </div>`;
+  } else if(step >= 0 && step < STEPS.length){
+    const s = STEPS[step];
+    app.innerHTML = `<div class="screen">
+      <div class="topbar">
+        <div class="row spread"><span class="stepcount">Step ${step+1} of ${STEPS.length}</span><span class="pct">${step===0 ? "About 5 minutes" : Math.round(step/STEPS.length*100) + "% complete"}</span></div>
+        <div class="bar" role="progressbar" aria-label="Setup progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(step/STEPS.length*100)}"><b style="width:${Math.max(3,Math.round(step/STEPS.length*100))}%"></b></div>
+      </div>
+      <h2>${s.title}</h2>
+      <form id="stepform" onsubmit="return false">${s.body()}</form>
+      <div class="navrow">
+        <button class="btn ghost" data-go="${step-1}">Back</button>
+        <button class="btn" data-go="${step+1}">${step===STEPS.length-1?"See my first Sunday":"Next"}</button>
+      </div></div>`;
+    const nm = app.querySelector('input[name=name]'); if(nm) nm.id = 'f-name';
+  } else {
+    renderPreview();
+  }
+  window.scrollTo({top:0});
+  const h = app.querySelector('h1,h2'); if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+}
+
+function renderPreview(){
+  const P = build();
+  const who = A.name.trim();
+  const full = view === "full";
+  const arrive = new Date(SUN); arrive.setDate(arrive.getDate() - ({Friday:2, Saturday:1, Sunday:0}[A.runDay] || 0));
+  const dateLine = fmt(arrive,{weekday:'long', month:'long', day:'numeric'});
+  const dayHtml = P.days.map(({d,evs}) => {
+    const dt = dayDate(d);
+    const body = evs.length ? evs.map(e => {
+      const cls = e.busy ? "ev busy" : e.skip ? "ev busy" : "ev new";
+      const why = (full && e.why) ? `<span class="why">${esc(e.why)}</span>` : "";
+      if(e.skip && !full) return "";
+      return `<span class="${cls}">${esc(e.text)}${e.busy?' <span class="note">(already on your calendar)</span>':''}</span>${why}`;
+    }).join('') : `<span class="ev busy">Open day</span>`;
+    return `<li><span class="d">${fmt(dt,{weekday:'short'})}<small>${fmt(dt,{month:'short',day:'numeric'})}</small></span><span>${body}</span></li>`;
+  }).join('');
+
+  const okHtml = P.oks.map(o => {
+    const dec = decisions[o.id];
+    return `<div class="ok ${dec?'done':''}" data-ok="${o.id}"><p>${o.text}</p>
+      ${dec ? `<p><b>${dec==='keep'?'Kept.':'Changed.'}</b> I'll ask whether to make this a rule next time.</p><button class="btn ghost" data-undo="${o.id}" style="padding:.3em .9em;font-size:.9rem">Undo</button>`
+            : `<div class="row"><button class="btn" data-dec="${o.id}" data-v="keep">${o.keep}</button><button class="btn ghost" data-dec="${o.id}" data-v="swap">${o.swap}</button></div>`}
+    </div>`;
+  }).join('');
+
+  const aisleHtml = g => AISLE_ORDER.filter(a => g[a]).map(a => `
+    <div class="aisle">${a}</div><ul class="items">${P.byAisle[a].map(it =>
+      `<li><span>${esc(it.name)}${full && it.why ? `<span class="rule">${esc(it.why)}</span>`:''}</span><span>${it.reorder?'reorder':money(it.price)}</span></li>`).join('')}</ul>`).join('');
+  const order = stores().length ? stores() : ["Your store"];
+  const storeNames = order.filter(sn => P.byStore[sn]);
+  const multi = stores().length > 1;
+  const listHtml = storeNames.map(sn => `${multi || sn!=="Your store" ? `<div class="storehead">${esc(sn)}<small>${sn==="Your store" ? "" : esc(supportFor(sn))}</small></div>` : ""}${aisleHtml(P.byStore[sn])}`).join('')
+    + (multi && A.storeRule==="main_first" ? `<p class="note">Only if ${esc(mainStore())} is out: ${stores().slice(1).map(esc).join(" or ")}.</p>` : "");
+  let deliv = "";
+  if(A.mode === "delivery"){
+    deliv = P.total >= 25 ? `<p class="note">Over the $25 free delivery minimum.</p>` : `<p class="note" style="color:var(--warn)">${money(25-P.total)} short of the $25 free delivery minimum.</p>`;
+  }
+  const listName = `Groceries ${fmt(SUN,{month:'short', day:'numeric'})}`;
+
+  const whyTop = full ? `<p class="note">Full version: every addition shows why it's there. Your ${A.style==="both"?"inbox will get both versions for the first few weeks":"settings pick this version"}.</p>` : "";
+
+  app.innerHTML = `<div class="screen">
+    <div class="done-banner">Setup 100% complete</div>
+    <section class="next" aria-labelledby="next-h">
+      <h2 id="next-h">What happens next</h2>
+      <p class="note"><b>Nothing is scheduled.</b> This is a prototype: no email will arrive, and nothing touched your calendar or inbox. Your answers disappear when you close this tab, so download this Sunday below if you want a copy.</p>
+      <p class="note" style="margin-top:14px">Here's what the full version would do with your answers:</p>
+      <ol class="how">
+        <li><span><b>What it does.</b> Each week it checks ${esc(CAL[A.calendarApp])} and your inbox, plans around what's already there, adds new items to ${esc(CAL[A.calendarApp])} and ${esc(TODO[A.todoApp])}, and builds your grocery list${mainStore() ? " for " + esc(mainStore()) : ""}. Then it emails you the plan. Once a day it also checks your inbox for bills, trials, deliveries, and appointments.</span></li>
+        <li><span><b>When.</b> Every ${esc(A.runDay)} at ${esc(runTimeLabel())}, from your ${A.computer==="windows" ? "Windows PC" : "Mac"}. If it's asleep then, the plan goes out when it wakes; if it's switched off, that week is missed. Your first plan would arrive ${esc(dateLine)}. Reply to anything under "Needs your OK" within 3 hours, or its picks stand.</span></li>
+        <li><span><b>How to stop it.</b> Run <code>/sunday-reset:stop</code> in Claude Code. It removes the schedule right away, then asks whether to remove the upcoming items it added and whether to delete its data: your settings in the Sunday Reset folder in Documents${A.storage==="drive" ? ", and your history in Google Drive" : A.storage==="onedrive" ? ", and your history in OneDrive" : ""}. Nothing is deleted unless you say yes.</span></li>
+      </ol>
+      <p class="note" style="margin-top:14px">Sunday Reset is a free plugin for Claude Code. To use it for real, install it from <a href="https://github.com/donut-codes/sunday-reset">github.com/donut-codes/sunday-reset</a>.</p>
+    </section>
+    <div class="row spread"><h2>Your first Sunday</h2><button class="btn ghost" data-go="${STEPS.length-1}">Change answers</button></div>
+    <p class="muted">This is the email you'd get at ${esc(runTimeLabel())} on ${esc(dateLine)}. The buttons work.</p>
+    ${A.style==="both" ? `<div class="tabs" role="group" aria-label="Email version"><button data-view="short" aria-pressed="${!full}">Short version</button><button data-view="full" aria-pressed="${full}">Full version</button></div>` : ""}
+    <article class="mail">
+      <div class="mailhead"><b>Sunday Reset</b> to ${esc(who || "you")}<br>Your week of ${esc(fmt(SUN,{month:'long', day:'numeric'}))}</div>
+      <div class="mailbody">
+        <h2>${esc(greeting())}</h2>
+        <p>Here's the week. New items are marked with a plus and are already in ${esc(CAL[A.calendarApp])} and ${esc(TODO[A.todoApp])}.</p>
+        ${whyTop}
+        ${P.oks.length ? `<section><h3>Needs your OK</h3><p class="note">Replies by ${esc(replyByLabel())}. If you don't answer, my picks stand.</p>${okHtml}</section>` : ""}
+        <section><h3>The week</h3><ul class="days">${dayHtml}</ul>
+          ${full && P.workouts.length < parseInt(A.workDays,10) ? `<p class="note">You asked for ${A.workDays} workouts. ${P.workouts.length} fit around your calendar this week.</p>` : ""}</section>
+        <section><h3>Grocery list</h3>
+          <p class="note">${mainStore() ? `Saved as "${esc(listName)}" and sorted in the order you walk the store. Nothing goes in your cart.` : `Sorted by aisle. Add your store in setup to get live prices and a saved list.`}</p>
+          ${listHtml}
+          <div class="total"><span>Estimated total</span><span>${money(P.total)}</span></div>${deliv}
+        </section>
+        ${P.events.length ? `<section><h3>Coming up near ${esc(A.city.trim() || "you")}</h3>
+          <p class="note">Sample picks for the prototype. The real version searches ${A.radius==="city"?"your city":A.radius==="30"?"within 30 minutes":"within an hour"} for the next month.</p>
+          <ul class="plain">${P.events.map(e=>`<li><b>${fmt(e.date,{weekday:'short', month:'short', day:'numeric'})}</b>: ${esc(e.text)}${full?`<span class="why" style="margin-left:0">${esc(e.why)}</span>`:''}</li>`).join('')}</ul></section>` : ""}
+        ${P.hobbies.length ? `<section><h3>Live a little</h3>
+          <ul class="plain">${P.hobbies.map(h=>{const nm=esc(h.name.trim()); const f={weekly:"every week",biweekly:"every other week",monthly:"once a month"}[h.freq];
+            const status = h.name.trim()===P.hobbyNudge ? "Overdue, see Needs your OK above" : h.freq==="monthly" ? "Done this month" : "On the calendar this week";
+            return `<li><b>${nm}</b>, ${f}: ${status}</li>`;}).join('')}</ul>
+          ${full?`<p class="note">Hobby time is treated like a workout. If something bumps it, it moves to another open slot instead of quietly disappearing.</p>`:''}</section>` : ""}
+        <section><h3>Saved</h3><p class="note">This week's plan and list are saved to ${STORE_LABEL[A.storage]}, so you can repeat it later.</p></section>
+        <p class="note" style="margin-top:28px;padding-top:14px;border-top:1px solid var(--line)">To stop these emails, run /sunday-reset:stop in Claude Code.</p>
+      </div>
+    </article>
+    <div class="navrow navrow-dl"><button class="btn ghost" data-go="${STEPS.length-1}">Back to setup</button>
+      <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small><span id="dlMsg" class="dlmsg" aria-live="polite"></span></div></div>
+  </div>`;
+}
+
+// ---------- download ----------
+// Saves the email as it looks right now (short or full view, with any OK
+// decisions made) as a standalone page that opens in any browser.
+function ymd(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+function sundayFile(){
+  const mail = app.querySelector('.mail'); if(!mail) return null;
+  const copy = mail.cloneNode(true);
+  // buttons do nothing in a saved file: turn open questions into plain text
+  copy.querySelectorAll('.ok').forEach(ok => {
+    const row = ok.querySelector('.row');
+    if(row){ const [a,b] = [...row.querySelectorAll('button')].map(x => x.textContent.trim());
+      row.outerHTML = `<p class="note">Options: ${esc(a)}, or ${esc(b)}.</p>`; }
+    ok.querySelectorAll('button').forEach(x => x.remove());
+  });
+  const css = document.querySelector('style').textContent;
+  const fonts = (document.querySelector('link[rel=stylesheet]') || {}).href || "";
+  const title = `Sunday Reset, week of ${fmt(SUN,{month:'long', day:'numeric'})}`;
+  const html = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+${fonts ? `<link href="${esc(fonts)}" rel="stylesheet">` : ""}
+<style>${css}</style></head>
+<body><main>
+<p class="note">Saved from the Sunday Reset prototype at cameroncrump.com/sunday-reset. The calendar and inbox are sample data, not your real week.</p>
+${copy.outerHTML}
+</main></body></html>`;
+  return {name:`sunday-reset-${ymd(SUN)}.html`, html};
+}
+function downloadSunday(){
+  const f = sundayFile(); if(!f) return;
+  const url = URL.createObjectURL(new Blob([f.html], {type:"text/html"}));
+  const a = document.createElement('a'); a.href = url; a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const msg = document.getElementById('dlMsg');
+  if(msg) msg.textContent = `Downloaded ${f.name}. Open it in any browser.`;
+}
+
+// ---------- input capture ----------
+function capture(){
+  const f = document.getElementById('stepform'); if(!f) return;
+  f.querySelectorAll('input[type=radio]:checked').forEach(r => A[r.name] = r.value);
+  f.querySelectorAll('input[type=text][name], input[type=time][name], input[type=range][name]').forEach(t => A[t.name] = t.value);
+  const cb = f.querySelector('input[name=confirmBrands]'); if(cb) A.confirmBrands = cb.checked;
+  const pr = f.querySelectorAll('input[name=proteins]');
+  if(pr.length) A.proteins = [...pr].filter(x=>x.checked).map(x=>x.value);
+  const et = f.querySelectorAll('input[name=eventTypes]');
+  if(et.length) A.eventTypes = [...et].filter(x=>x.checked).map(x=>x.value);
+  f.querySelectorAll('.hobby').forEach(row => {
+    const i = +row.dataset.h;
+    row.querySelectorAll('[data-hk]').forEach(el => A.hobbies[i][el.dataset.hk] = el.value);
+  });
+  f.querySelectorAll('.staple:not(.hobby)').forEach(row => {
+    const i = +row.dataset.i;
+    row.querySelectorAll('[data-k]').forEach(el => A.staples[i][el.dataset.k] = el.value);
+  });
+}
+
+app.addEventListener('change', e => {
+  capture();
+  if(e.target.name === 'produce'){ const t=document.getElementById('thr'); if(t) t.classList.toggle('hidden', A.produce!=='organic_unless'); }
+  if(e.target.name === 'hasPet'){ const t=document.getElementById('petq'); if(t) t.classList.toggle('hidden', A.hasPet!=='yes'); }
+  if(e.target.name === 'runTime'){ const t=document.getElementById('ct'); if(t) t.classList.toggle('hidden', A.runTime!=='other'); }
+  if(e.target.name === 'eventsOn'){ const t=document.getElementById('evq'); if(t) t.classList.toggle('hidden', A.eventsOn!=='yes'); }
+  if(e.target.name === 'hobbiesOn'){ const t=document.getElementById('hbq'); if(t) t.classList.toggle('hidden', A.hobbiesOn!=='yes'); }
+  if(e.target.name === 'grooming'){ const t=document.getElementById('gw'); if(t) t.classList.toggle('hidden', A.grooming==='none'); }
+});
+app.addEventListener('input', e => {
+  if(e.target.id === 'f-thr'){ A.threshold = e.target.value; document.getElementById('thr-out').textContent = thrLabel(A.threshold); }
+});
+app.addEventListener('click', async e => {
+  const go = e.target.closest('[data-go]');
+  if(go){ capture(); step = parseInt(go.dataset.go,10); if(step===STEPS.length && A.style!=="both") view = A.style; render(); return; }
+  const v = e.target.closest('[data-view]');
+  if(v){ view = v.dataset.view; renderPreview(); return; }
+  const d = e.target.closest('[data-dec]');
+  if(d){ decisions[d.dataset.dec] = d.dataset.v; const y = window.scrollY; renderPreview(); window.scrollTo({top:y}); return; }
+  const u = e.target.closest('[data-undo]');
+  if(u){ delete decisions[u.dataset.undo]; const y = window.scrollY; renderPreview(); window.scrollTo({top:y}); return; }
+  if(e.target.id === 'dlBtn'){ downloadSunday(); }
+});
+
+render();
+})();
+</script>
+</body>
+</html>

@@ -18,6 +18,7 @@ Plugin files live in `${CLAUDE_PLUGIN_ROOT}`. Scripts are in `${CLAUDE_PLUGIN_RO
 ## Step 1: Create the folder (first, because everything else lives in it)
 Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh`. On a Mac this triggers the Documents permission prompt. Tell the user to click Allow. Expect `WRITE_OK`.
 If the output shows `OFFLOADED_FILES`, or the user has iCloud Desktop & Documents turned on, ask them to right-click `Documents/Sunday Reset` in Finder and choose **Keep Downloaded**, then rerun the script and confirm `NO_OFFLOADED_FILES`.
+Then run `python3 --version`. The weekly email is rendered with Python. On a Mac without Apple's command line tools this fails or opens an install prompt: have the user run `xcode-select --install`, wait for it to finish, and rerun. If they have Xcode but never accepted its license, `sudo xcodebuild -license accept` fixes it (they type their own password).
 
 ## Step 2: Interview
 Ask in this order. Defaults in brackets.
@@ -42,13 +43,23 @@ Save answers to `~/Documents/Sunday Reset/config.json` using the shape in `${CLA
 - **Email:** find a Gmail (or other mail) tool that can send. If none exists, tell the user which connector to add, then continue. Sunday Reset only ever emails `user.email`.
 - **Chrome:** check that the Claude in Chrome extension is connected. For each store in the config, open its site and ask the user to sign in themselves if lists need an account. Record what works in `grocery.store_support`.
 - **Health data (optional):** ask the user to set up a Health auto-export app that writes a daily JSON to `~/Documents/Sunday Reset/health/latest.json`.
+- **Record the tools scheduled runs may use.** Scheduled runs have nobody to approve anything, so they can only use tools on an explicit list. Save the exact tool names you verified above to `platform.allowed_tools` in config.json: the mail send tool, the mail search/read tool, any non-Apple calendar or to-do connector tools, and `mcp__claude-in-chrome` if Chrome is connected. Nothing else. Tell the user in one line that this is the complete list of what the schedule can touch.
 
 ## Step 5: Run `/sunday-reset:setup-check`
 Fix anything it reports as failed before moving on.
 
-## Step 6: Schedule
-Mac: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/install_schedule.sh <weekday 0-6> <HH:MM> <daily sweep HH:MM>` (0 = Sunday). Windows: create two Task Scheduler tasks that run `claude -p "/sunday-reset:weekly-run"` and `claude -p "/sunday-reset:inbox-sweep"` at the same times.
-Remind the user that unattended runs need the email-send tool allowed in Claude Code's permission settings for this folder; otherwise the run falls back to saving a draft.
+## Step 6: Schedule, then prove it works unattended
+Mac:
+1. `bash ${CLAUDE_PLUGIN_ROOT}/scripts/install_schedule.sh <weekday 0-6> <HH:MM> <daily sweep HH:MM>` (0 = Sunday). It installs the weekly run, the daily inbox sweep, and the reply watcher, each limited to the tools in the allow-list.
+2. `bash ${CLAUDE_PLUGIN_ROOT}/scripts/install_schedule.sh --test`. This runs one dry run right now through the exact path the schedule uses, with nobody approving anything. Before it starts, tell the user to stay nearby: macOS may ask whether Claude can use Calendar, Reminders, or Documents, and those prompts only appear for a background run. They click Allow. Expect `TEST_PASSED` and the dry-run email in their inbox. On `TEST_FAILED`, read the log lines it prints, fix the cause (usually a missing tool in `platform.allowed_tools` or a declined macOS prompt), and rerun the test.
 
-## Step 7: Dry run
-Run `/sunday-reset:weekly-run --dry-run`. It uses sample data, writes the plan to history, and sends the test email. Mark setup complete in the progress file.
+Windows: create two Task Scheduler tasks named exactly `Sunday Reset weekly` and `Sunday Reset daily`, starting in the Sunday Reset folder, that run `claude -p "/sunday-reset:weekly-run" --permission-mode dontAsk --allowedTools <rules>` and the same with `"/sunday-reset:inbox-sweep"`, where `<rules>` are the same entries `install_schedule.sh` builds (plugin scripts, reading plugin files, `Edit(./**)`, `Skill`, and `platform.allowed_tools`). Then run the weekly task once by hand with `--dry-run` added and confirm the email arrives.
+
+After a plugin update, run setup again and keep the settings: the allow-list names the plugin version's folder, so the schedule has to be reinstalled.
+
+## Step 7: Finish
+Confirm the dry-run email from Step 6 arrived. If the user wants to see it again interactively, run `/sunday-reset:weekly-run --dry-run`. Mark setup complete in the progress file, then tell the user, in plain words:
+- **What happens:** every {weekly day} at {time} it plans the week, adds new items to their calendar and to-do app, and emails the plan. It also checks the inbox once a day at {daily sweep time} for bills, trials, deliveries, and appointments.
+- **Replies:** answer the numbered "Needs your OK" items by replying within 3 hours of the email. If they don't, the picks stand.
+- **If the Mac is asleep** at the scheduled time, the run happens when it wakes. If it's switched off, that week's run is missed.
+- **To stop:** `/sunday-reset:stop`.

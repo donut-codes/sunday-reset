@@ -2,13 +2,13 @@
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "sunday-reset",
   "owner": { "name": "Cameron Crump" },
-  "metadata": { "description": "Sunday Reset: a weekly life planner for Claude Code", "version": "0.1.0" },
+  "metadata": { "description": "Sunday Reset: a weekly life planner for Claude Code", "version": "0.2.0" },
   "plugins": [
     {
       "name": "sunday-reset",
       "source": "./plugins/sunday-reset",
       "description": "Plans your week every Sunday: workouts around your calendar, dinners, a store-sorted grocery list, bills and trials from your inbox, pet care, hobbies, and local events, delivered in one email.",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "category": "productivity"
     }
   ]
