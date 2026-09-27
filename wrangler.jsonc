@@ -1,0 +1,7 @@
+// Cloudflare builds sundayreset.cameroncrump.com from this repo on every push to main.
+// Publish only the prototype: the plugin and README stay on GitHub, not on the site.
+{
+  "name": "sunday-reset",
+  "compatibility_date": "2026-09-01",
+  "assets": { "directory": "./prototype" }
+}
