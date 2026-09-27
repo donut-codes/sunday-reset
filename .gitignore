@@ -6,3 +6,6 @@ history/
 logs/
 *.log
 .DS_Store
+
+# Wrangler local cache (can hold account details); never commit
+.wrangler/
