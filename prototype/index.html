@@ -176,6 +176,15 @@ textarea{min-height:5.5em;resize:vertical}
 .dl{display:flex;flex-direction:column;align-items:flex-end;gap:4px;text-align:right}
 .dl small{color:var(--muted);font-size:.85rem}
 .dlmsg{color:var(--herb);font-weight:700;font-size:.9rem}
+/* the way to the real thing; opens a new tab so the plan on screen isn't lost */
+.ghlink{color:var(--herb);font-weight:700;text-decoration:none;white-space:nowrap}
+.ghlink:hover{text-decoration:underline;text-underline-offset:3px}
+.dl .ghlink{margin-top:10px}
+.navrow-land{align-items:center}
+@media (max-width:560px){
+  /* stacked on phones, main action first, so Start setup isn't squeezed by the link */
+  .navrow-land{flex-direction:column-reverse;align-items:stretch;gap:16px;text-align:center}
+}
 /* the download column is taller than the back button, so don't let it stretch */
 .navrow-dl{align-items:flex-start}
 @media (max-width:560px){
@@ -664,7 +673,7 @@ function render(){
         </ol>
       </section>
 
-      <div class="navrow" style="justify-content:flex-end"><button class="btn" data-go="0">Start setup</button></div>
+      <div class="navrow navrow-land"><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a><button class="btn" data-go="0">Start setup</button></div>
     </div>`;
   } else if(step >= 0 && step < STEPS.length){
     const s = STEPS[step];
@@ -739,7 +748,7 @@ function renderPreview(){
         <li><span><b>When.</b> Every ${esc(A.runDay)} at ${esc(runTimeLabel())}, from your ${A.computer==="windows" ? "Windows PC" : "Mac"}. If it's asleep then, the plan goes out when it wakes; if it's switched off, that week is missed. Your first plan would arrive ${esc(dateLine)}. Reply to anything under "Needs your OK" within 3 hours, or its picks stand.</span></li>
         <li><span><b>How to stop it.</b> Run <code>/sunday-reset:stop</code> in Claude Code. It removes the schedule right away, then asks whether to remove the upcoming items it added and whether to delete its data: your settings in the Sunday Reset folder in Documents${A.storage==="drive" ? ", and your history in Google Drive" : A.storage==="onedrive" ? ", and your history in OneDrive" : ""}. Nothing is deleted unless you say yes.</span></li>
       </ol>
-      <p class="note" style="margin-top:14px">Sunday Reset is a free plugin for Claude Code. To use it for real, install it from <a href="https://github.com/donut-codes/sunday-reset">github.com/donut-codes/sunday-reset</a>.</p>
+      <p class="note" style="margin-top:14px">Sunday Reset is a free plugin for Claude Code. <a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></p>
     </section>
     <div class="row spread"><h2>Your first Sunday</h2><button class="btn ghost" data-go="${STEPS.length-1}">Change answers</button></div>
     <p class="muted">This is the email you'd get at ${esc(runTimeLabel())} on ${esc(dateLine)}. The buttons work.</p>
@@ -771,7 +780,7 @@ function renderPreview(){
       </div>
     </article>
     <div class="navrow navrow-dl"><button class="btn ghost" data-go="${STEPS.length-1}">Back to setup</button>
-      <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small><span id="dlMsg" class="dlmsg" aria-live="polite"></span></div></div>
+      <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small><span id="dlMsg" class="dlmsg" aria-live="polite"></span><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></div></div>
   </div>`;
 }
 
