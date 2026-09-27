@@ -1,6 +1,6 @@
 ---
 name: setup
-description: First-run setup for Sunday Reset. Use when the user installs Sunday Reset, says "set up Sunday Reset", "get started", "change my settings", or when ~/Documents/Sunday Reset/config.json does not exist yet. Creates the folder, runs the setup interview, writes the config, triggers every permission prompt while the user is present, runs setup-check, installs the schedule, and finishes with a dry run.
+description: First-run setup for Sunday Reset. Use when the user installs Sunday Reset, says "set up Sunday Reset", "get started", "change my settings", or when ~/Documents/Sunday Reset/config.json does not exist yet. Creates the folder, opens the setup page in the browser (or asks the questions in the terminal), saves the config, triggers every permission prompt while the user is present, runs setup-check, installs the schedule, and finishes with a dry run.
 ---
 
 # Sunday Reset setup
@@ -20,8 +20,18 @@ Run `bash ${CLAUDE_PLUGIN_ROOT}/scripts/check_folder.sh`. On a Mac this triggers
 If the output shows `OFFLOADED_FILES`, or the user has iCloud Desktop & Documents turned on, ask them to right-click `Documents/Sunday Reset` in Finder and choose **Keep Downloaded**, then rerun the script and confirm `NO_OFFLOADED_FILES`.
 Then run `python3 --version`. The weekly email is rendered with Python. On a Mac without Apple's command line tools this fails or opens an install prompt: have the user run `xcode-select --install`, wait for it to finish, and rerun. If they have Xcode but never accepted its license, `sudo xcodebuild -license accept` fixes it (they type their own password).
 
-## Step 2: Interview
-Ask in this order. Defaults in brackets.
+## Step 2: Setup page (answers happen in the browser)
+The questions live in one page, `${CLAUDE_PLUGIN_ROOT}/web/index.html`. It's the same page as the public prototype, so the questions can't drift apart.
+
+1. If `~/Documents/Sunday Reset/config.json` already exists, ask first: keep it (skip to Step 3), change some answers, or start over. For "change" or "start over", continue below; the page saves to `config.new.json` so nothing is overwritten.
+2. If the user has a `config.json` downloaded from the public prototype (for example in Downloads), offer to use it: move it to `~/Documents/Sunday Reset/config.json` (or `config.new.json`), then ask only for what's missing, which is always `user.email`.
+3. Otherwise start the page in the background (use the Bash tool's background option, because it waits for the user):
+   `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/setup_server.py`
+   It prints `SETUP_URL <url>` and opens the browser. Tell the user: "Your setup page just opened in your browser. Answer the questions there and click Save and finish. I'll pick up as soon as it's saved." If the browser didn't open, give them the URL.
+4. Wait for the output line `SAVED <path>` (check every 30 seconds). `SAVED ... EXISTING` means it went to `config.new.json`: show the user what changed between the two files, ask which to keep, and rename the chosen one to `config.json`. `TIMEOUT` (45 minutes) means nobody finished: ask whether to reopen the page or answer here instead.
+5. Read the saved config and show a short summary. Then ask, in the terminal, the few things the page doesn't cover yet, all optional: pet vet or vaccine dates, pet food brand and bag size.
+
+If the user would rather answer in the terminal, or the page can't open (no browser, remote session), ask the same questions here instead, a few at a time, defaults in brackets:
 1. **Basics:** name [blank, greeting drops the name], email address for the plan (required), which day and time the plan arrives [Sunday 7:00 AM; allow any day and any time], short, full, or both email versions [both].
 2. **Your setup:** computer [detect from `uname`], calendar app (Apple Calendar, Google Calendar, Outlook), to-do app (Apple Reminders, Google Tasks, Microsoft To Do, Todoist), where weekly history lives (Documents folder, Google Drive, OneDrive).
 3. **Household:** how many people you shop and cook for [1], anything about who's eating (kids' favorites, a healthy skew).

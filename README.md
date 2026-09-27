@@ -2,7 +2,7 @@
 
 A weekly life planner for Claude Code. Answer a few questions once. Every week you get one email with your workouts placed around your calendar, dinners, a grocery list sorted by aisle with live prices, bills and free trials pulled from your inbox, pet care, hobby time, and things to do nearby. Everything is already on your calendar and to-do list.
 
-**Try it first, no install:** [sundayreset.cameroncrump.com](https://sundayreset.cameroncrump.com/). That page is served straight from [`prototype/`](prototype/index.html) in this repo, so it's always the version on `main`.
+**Try it first, no install:** [sundayreset.cameroncrump.com](https://sundayreset.cameroncrump.com/). That page is served straight from [`plugins/sunday-reset/web/`](plugins/sunday-reset/web/index.html) in this repo, so it's always the version on `main`. The same page runs the real setup on your own computer, so the public prototype and the real setup always ask the same questions.
 
 ## Before you install
 
@@ -22,7 +22,7 @@ In Claude Code:
 /sunday-reset:setup
 ```
 
-Setup takes about 10 minutes and does everything that needs you present: creates `~/Documents/Sunday Reset/`, asks the setup questions, triggers each permission prompt, runs `/sunday-reset:setup-check`, installs the schedule, and then runs one test exactly the way the schedule will, with nobody at the keyboard. Stay nearby for that test: macOS may ask whether Claude can use Calendar, Reminders, or Documents, and you click Allow. It finishes by emailing you a sample plan.
+Setup takes about 10 minutes and does everything that needs you present: creates `~/Documents/Sunday Reset/`, opens a setup page in your browser for the questions (the same page as the prototype, running only on your computer), triggers each permission prompt, runs `/sunday-reset:setup-check`, installs the schedule, and then runs one test exactly the way the schedule will, with nobody at the keyboard. Stay nearby for that test: macOS may ask whether Claude can use Calendar, Reminders, or Documents, and you click Allow. It finishes by emailing you a sample plan.
 
 ## What runs, and when
 

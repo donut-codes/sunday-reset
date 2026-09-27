@@ -205,9 +205,17 @@ textarea{min-height:5.5em;resize:vertical}
 (function(){
 const app = document.getElementById('app');
 
+// ---------- mode ----------
+// Public prototype by default. When setup_server.py serves this page on this computer with
+// ?mode=setup&token=..., it becomes the real setup: answers are saved to config.json locally.
+const QS = new URLSearchParams(location.search);
+const SETUP = QS.get('mode') === 'setup' && /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+const TOKEN = QS.get('token') || '';
+if(SETUP){ document.title = 'Set up Sunday Reset'; document.querySelectorAll('.sitefoot').forEach(el => el.remove()); }
+
 // ---------- state ----------
 const A = {
-  name:"", storage:"documents", style:"both", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
+  name:"", email:"", household:"1", householdNotes:"", mealStyle:"batch_cook", dinners:"5", storage:"documents", style:"both", runTime:"7:00 AM", customTime:"07:30", runDay:"Sunday",
   computer:"mac", calendarApp:"apple", todoApp:"apple",
   store:"", store2:"", store3:"", storeRule:"main_first", mode:"pickup", size:"per_oz", produce:"organic_unless", threshold:"50",
   price:"balanced", confirmBrands:true,
@@ -283,6 +291,10 @@ function dayDate(i){ const d=new Date(SUN); d.setDate(d.getDate()+i); return d; 
 const STEPS = [
   { title:"The basics", body:() => `
     <div class="q"><label class="lab" for="f-name">What should we call you? <span class="muted" style="font-weight:400">(optional)</span></label>${text('name','First name')}</div>
+    ${SETUP ? `<div class="q"><label class="lab" for="f-email">Email for your weekly plan</label>
+      <p class="hint">Sunday Reset only ever emails this address.</p>
+      <input type="email" id="f-email" name="email" value="${esc(A.email)}" placeholder="you@example.com" autocomplete="email" required>
+      <p id="email-err" class="hint hidden" style="color:var(--warn);margin-top:6px">Add an email address so your plan has somewhere to go.</p></div>` : ''}
     <fieldset class="q"><legend>Which day should your weekly plan arrive?</legend>
       <p class="hint">Early enough to review it before you shop.</p>
       ${radios('runDay',[["Friday","Friday"],["Saturday","Saturday"],["Sunday","Sunday"]])}</fieldset>
@@ -358,6 +370,13 @@ const STEPS = [
       ${text('bundleItems','Items, separated by commas')}</div>` },
 
   { title:"Meals", body:() => `
+    <fieldset class="q"><legend>How many people do you shop and cook for?</legend>
+      ${radios('household',[["1","Just me"],["2","2"],["3","3"],["4","4"],["5","5"],["6","6+"]])}</fieldset>
+    <div class="q"><label class="lab">Anything about who's eating? <span class="muted" style="font-weight:400">(optional)</span></label>${text('householdNotes','Kids love fruit and carbs, keep it healthy, no shellfish...')}</div>
+    <fieldset class="q"><legend>How does dinner usually happen?</legend>
+      ${radios('mealStyle',[["batch_cook","One big batch cook"],["cook_nights_leftovers","A few cook nights, leftovers the rest"],["nightly","Cook every night"]])}</fieldset>
+    <fieldset class="q"><legend>How many dinners should it plan?</legend>
+      ${radios('dinners',[["3","3"],["4","4"],["5","5"],["6","6"],["7","Every night"]])}</fieldset>
     <fieldset class="q"><legend>Which proteins do you cook with?</legend>
       ${checks('proteins',[["chicken","Chicken"],["steak","Steak"],["salmon","Salmon"],["ground turkey","Ground turkey"],["shrimp","Shrimp"],["tofu","Tofu"]])}</fieldset>
     <fieldset class="q"><legend>How should the week's protein get picked?</legend>
@@ -624,7 +643,25 @@ function build(){
 
 // ---------- render ----------
 function render(){
-  if(step === -1){
+  if(step === -1 && SETUP){
+    app.innerHTML = `<div class="screen intro">
+      <section class="hero">
+        <div class="kicker">Setup</div>
+        <h1>Set up Sunday Reset</h1>
+        <p class="lede">Answer these once. When you finish, your answers are saved to the Sunday Reset folder in Documents on this computer, and Claude Code takes it from there.</p>
+        <button class="btn" data-go="0">Start setup</button>
+        <p class="meta">About 5 minutes. Nothing you type here leaves this computer.</p>
+      </section>
+      <section>
+        <h2 style="font-size:1.25rem">What happens after this page</h2>
+        <ol class="how">
+          <li><span><b>Your answers are saved</b> to <code>~/Documents/Sunday Reset/config.json</code>.</span></li>
+          <li><span><b>Claude Code finishes up</b> in your terminal: it asks your Mac for Calendar and Reminders access (click Allow), connects email and Chrome, and tests everything.</span></li>
+          <li><span><b>A test email arrives</b> so you can see your first plan before anything is scheduled for real.</span></li>
+        </ol>
+      </section>
+    </div>`;
+  } else if(step === -1){
     const WK = [
       ["Sun",[["meal","Grocery pickup"],["meal","Batch cook"]]],
       ["Mon",[["move","Studio class"]]],
@@ -686,9 +723,11 @@ function render(){
       <form id="stepform" onsubmit="return false">${s.body()}</form>
       <div class="navrow">
         <button class="btn ghost" data-go="${step-1}">Back</button>
-        <button class="btn" data-go="${step+1}">${step===STEPS.length-1?"See my first Sunday":"Next"}</button>
+        <button class="btn" data-go="${step+1}">${step===STEPS.length-1?(SETUP?"Review and save":"See my first Sunday"):"Next"}</button>
       </div></div>`;
     const nm = app.querySelector('input[name=name]'); if(nm) nm.id = 'f-name';
+  } else if(SETUP){
+    renderFinish();
   } else {
     renderPreview();
   }
@@ -738,7 +777,8 @@ function renderPreview(){
   const whyTop = full ? `<p class="note">Full version: every addition shows why it's there. Your ${A.style==="both"?"inbox will get both versions for the first few weeks":"settings pick this version"}.</p>` : "";
 
   app.innerHTML = `<div class="screen">
-    <div class="done-banner">Setup 100% complete</div>
+    ${SETUP ? `<div class="done-banner">Saved. This preview uses sample data; your real first plan comes from Claude Code.</div>
+    <div class="row" style="margin-bottom:10px"><button class="btn ghost" data-finish="1">Back to summary</button></div>` : `<div class="done-banner">Setup 100% complete</div>
     <section class="next" aria-labelledby="next-h">
       <h2 id="next-h">What happens next</h2>
       <p class="note"><b>Nothing is scheduled.</b> This is a prototype: no email will arrive, and nothing touched your calendar or inbox. Your answers disappear when you close this tab, so download this Sunday below if you want a copy.</p>
@@ -749,7 +789,7 @@ function renderPreview(){
         <li><span><b>How to stop it.</b> Run <code>/sunday-reset:stop</code> in Claude Code. It removes the schedule right away, then asks whether to remove the upcoming items it added and whether to delete its data: your settings in the Sunday Reset folder in Documents${A.storage==="drive" ? ", and your history in Google Drive" : A.storage==="onedrive" ? ", and your history in OneDrive" : ""}. Nothing is deleted unless you say yes.</span></li>
       </ol>
       <p class="note" style="margin-top:14px">Sunday Reset is a free plugin for Claude Code. <a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></p>
-    </section>
+    </section>`}
     <div class="row spread"><h2>Your first Sunday</h2><button class="btn ghost" data-go="${STEPS.length-1}">Change answers</button></div>
     <p class="muted">This is the email you'd get at ${esc(runTimeLabel())} on ${esc(dateLine)}. The buttons work.</p>
     ${A.style==="both" ? `<div class="tabs" role="group" aria-label="Email version"><button data-view="short" aria-pressed="${!full}">Short version</button><button data-view="full" aria-pressed="${full}">Full version</button></div>` : ""}
@@ -780,7 +820,8 @@ function renderPreview(){
       </div>
     </article>
     <div class="navrow navrow-dl"><button class="btn ghost" data-go="${STEPS.length-1}">Back to setup</button>
-      <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small><span id="dlMsg" class="dlmsg" aria-live="polite"></span><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></div></div>
+      <div class="dl"><button class="btn" id="dlBtn">Download this Sunday</button><small>Saves a file you can open in any browser.</small>
+        ${SETUP ? '' : `<button class="btn ghost" id="cfgBtn" style="margin-top:8px">Download my setup</button><small>Saves your answers as config.json. Put it in Documents/Sunday Reset before running setup in Claude Code, or send it to whoever sets it up for you.</small>`}<span id="dlMsg" class="dlmsg" aria-live="polite"></span><a class="ghlink" href="https://github.com/donut-codes/sunday-reset" target="_blank" rel="noopener" aria-label="Get the real skill on GitHub (opens in a new tab)">Get the real skill on GitHub <span aria-hidden="true">&#8599;</span></a></div></div>
   </div>`;
 }
 
@@ -823,11 +864,125 @@ function downloadSunday(){
   if(msg) msg.textContent = `Downloaded ${f.name}. Open it in any browser.`;
 }
 
+// ---------- config.json (same shape as config.example.json) ----------
+function to24(label){ const [hm, ap] = label.split(" "); let [h, m] = hm.split(":").map(Number); h = (h % 12) + (ap === "PM" ? 12 : 0); return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`; }
+function itemKey(s){ return s.trim().toLowerCase().replace(/\s+/g," "); }
+function buildConfig(){
+  const RULE = {locked:"brand_locked", flexible:"flexible", sale:"whichever_on_sale", cheapest:"cheapest"};
+  const items = {};
+  A.staples.filter(x => x.item.trim()).forEach(x => {
+    const brands = x.brand.split(/\s+or\s+|,/i).map(b => b.trim()).filter(Boolean);
+    items[itemKey(x.item)] = {brands, rule: RULE[x.rule] || "flexible"};
+  });
+  const bundles = {};
+  const bItems = A.bundleItems.split(",").map(b => b.trim()).filter(Boolean);
+  if(bItems.length) bundles[A.bundleName.trim() || "bundle"] = bItems;
+  const dinners = parseInt(A.dinners,10);
+  return {
+    _note: "Written by the Sunday Reset setup page. Edit by running /sunday-reset:setup again.",
+    user: {name: A.name.trim(), email: A.email.trim()},
+    platform: {computer: A.computer, calendar: A.calendarApp,
+      todos: {apple:"apple_reminders", google:"google_tasks", microsoft:"microsoft_todo", todoist:"todoist"}[A.todoApp]},
+    schedule: {weekly_day: A.runDay, weekly_time: to24(runTimeLabel()), daily_sweep_time: "06:30"},
+    email: {summary_style: A.style, send_to_self_only: true, fallback: "draft"},
+    history: {location: {documents:"documents", drive:"google_drive", onedrive:"onedrive"}[A.storage],
+      path: A.storage === "documents" ? "~/Documents/Sunday Reset/history" : "Sunday Reset/history"},
+    household: {size: parseInt(A.household,10), notes: A.householdNotes.trim()},
+    grocery: {
+      stores: stores(), store_rule: A.storeRule,
+      mode: {pickup:"pickup", delivery:"delivery", instore:"in_store"}[A.mode],
+      size_rule: {per_oz:"best_per_ounce", usual:"usual", per_oz_flag:"best_per_ounce_flag"}[A.size],
+      produce: {prefer: A.produce, max_premium_pct: parseInt(A.threshold,10)},
+      default_price_sensitivity: A.price, confirm_brand_choices: !!A.confirmBrands,
+      list_naming: "Groceries {Mon D}", items, bundles
+    },
+    meals: {style: A.mealStyle, cook_nights: A.mealStyle === "batch_cook" ? 1 : A.mealStyle === "nightly" ? dinners : Math.ceil(dinners/2),
+      dinners_per_week: dinners, proteins: A.proteins, protein_mode: A.proteinMode},
+    pets: A.hasPet === "yes" ? [{name: A.petName.trim(), type: A.petType, monthly_meds: A.petMeds === "yes",
+      grooming: {type: A.grooming, every_weeks: A.grooming === "none" ? null : parseInt(A.groomWeeks,10)}}] : [],
+    workouts: {per_week: parseInt(A.workDays,10), split: {studio:"studio", half:"mix", home:"home"}[A.split],
+      time_of_day: A.workTime, easy_after_bad_sleep: A.easyAfterSleep === "yes",
+      health_export_path: "~/Documents/Sunday Reset/health/latest.json"},
+    extras: {
+      local_events: {enabled: A.eventsOn === "yes", area: A.city.trim(), interests: A.eventsOn === "yes" ? A.eventTypes : [],
+        radius: {city:"city", "30":"30min", "60":"60min"}[A.radius]},
+      hobbies: {enabled: A.hobbiesOn === "yes", list: A.hobbiesOn === "yes" ? A.hobbies.filter(h => h.name.trim())
+        .map(h => ({name: h.name.trim(), every: {weekly:"week", biweekly:"two_weeks", monthly:"month"}[h.freq]})) : []}
+    },
+    setup: {source: SETUP ? "setup_page" : "public_prototype", saved_at: new Date().toISOString()}
+  };
+}
+function downloadConfig(){
+  const blob = new Blob([JSON.stringify(buildConfig(), null, 2) + "\n"], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = "config.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const msg = document.getElementById('dlMsg'); if(msg) msg.textContent = "Downloaded config.json.";
+}
+
+// ---------- setup mode: review, save, done ----------
+let saveState = null; // null | "saving" | {ok, path, existing} | {error}
+function summaryRows(){
+  const c = buildConfig(); const g = c.grocery;
+  const yes = b => b ? "on" : "off";
+  return [
+    ["Name", c.user.name || "(none, the greeting skips it)"],
+    ["Plan goes to", c.user.email],
+    ["When", `${A.runDay} at ${runTimeLabel()}, ${A.style === "both" ? "short and full versions" : A.style + " version"}`],
+    ["Runs on", `${A.computer === "windows" ? "Windows PC" : "Mac"}, ${CAL[A.calendarApp]}, ${TODO[A.todoApp]}`],
+    ["History", STORE_LABEL[A.storage]],
+    ["Household", `${c.household.size === 1 ? "Just you" : c.household.size + " people"}${c.household.notes ? ", " + c.household.notes : ""}`],
+    ["Stores", g.stores.length ? g.stores.join(", ") : "(none yet)"],
+    ["Grocery rules", `${{best_per_ounce:"best price per ounce", usual:"usual sizes", best_per_ounce_flag:"best per ounce, ask on size changes"}[g.size_rule]}; produce ${A.produce === "organic_unless" ? "organic unless over " + A.threshold + "% more" : A.produce}; ${A.price}`],
+    ["Usuals", Object.keys(g.items).length ? Object.keys(g.items).join(", ") : "(none)"],
+    ["Dinners", `${c.meals.dinners_per_week} a week, ${{batch_cook:"one batch cook", cook_nights_leftovers:"cook nights plus leftovers", nightly:"cook every night"}[A.mealStyle]}; ${A.proteins.join(", ") || "no proteins picked"}`],
+    ["Pets", c.pets.length ? `${c.pets[0].name || "unnamed"} (${c.pets[0].type})` : "none"],
+    ["Workouts", c.workouts.per_week ? `${c.workouts.per_week} a week, ${A.workTime}` : "none"],
+    ["Local events", c.extras.local_events.enabled ? (c.extras.local_events.area || "on, no city yet") : "off"],
+    ["Hobbies", c.extras.hobbies.enabled ? (c.extras.hobbies.list.map(h => h.name).join(", ") || "on, none listed") : "off"]
+  ];
+}
+function renderFinish(){
+  const done = saveState && saveState.ok;
+  const err = saveState && saveState.error;
+  app.innerHTML = `<div class="screen">
+    ${done ? `<div class="done-banner">Saved to ${esc(saveState.path)}</div>
+      <h2>Go back to Claude Code</h2>
+      <p>${saveState.existing ? "You already had settings, so these were saved next to them as <code>config.new.json</code>. Claude Code will ask which to keep." : "Claude Code is picking up from here."} Watch the terminal: your Mac will ask for Calendar and Reminders access, so click Allow when it does.</p>
+      <p class="muted">You can close this tab.</p>
+      <div class="navrow"><span></span><button class="btn ghost" data-preview="1">Preview a sample first email</button></div>`
+    : `<div class="topbar"><div class="row spread"><span class="stepcount">Review</span><span class="pct">Almost done</span></div>
+        <div class="bar"><b style="width:96%"></b></div></div>
+      <h2>Check your answers</h2>
+      <p class="muted">Saving writes these to <code>~/Documents/Sunday Reset/config.json</code> on this computer. You can change anything later by running setup again.</p>
+      <table class="review" style="width:100%;border-collapse:collapse;margin-top:10px">${summaryRows().map(([k,v]) =>
+        `<tr><th style="text-align:left;vertical-align:top;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);white-space:nowrap;font-weight:700">${esc(k)}</th><td style="padding:8px 0;border-bottom:1px solid var(--line)">${esc(v)}</td></tr>`).join('')}</table>
+      ${err ? `<p class="note" style="color:var(--warn);margin-top:14px">${esc(err)}</p>
+        <p class="note">If the problem continues, download your answers and tell Claude Code where the file is. <button class="btn ghost" id="cfgBtn" style="margin-left:6px">Download config.json</button><span id="dlMsg" class="dlmsg" aria-live="polite"></span></p>` : ""}
+      <div class="navrow"><button class="btn ghost" data-go="${STEPS.length-1}">Back</button>
+        <button class="btn" id="saveBtn" ${saveState === "saving" ? "disabled" : ""}>${saveState === "saving" ? "Saving..." : "Save and finish"}</button></div>`}
+  </div>`;
+  window.scrollTo({top:0});
+}
+async function saveConfig(){
+  saveState = "saving"; renderFinish();
+  try {
+    const r = await fetch("/save", {method:"POST", headers:{"Content-Type":"application/json", "X-Setup-Token": TOKEN}, body: JSON.stringify(buildConfig())});
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(j.error || `The setup page couldn't save (error ${r.status}).`);
+    saveState = {ok:true, path:j.path, existing:!!j.existing};
+  } catch(e){
+    saveState = {error: (e && e.message && !/fetch/i.test(e.message)) ? e.message : "The setup page lost its connection to Claude Code. Check that setup is still running in your terminal, then try again."};
+  }
+  renderFinish();
+}
+
 // ---------- input capture ----------
 function capture(){
   const f = document.getElementById('stepform'); if(!f) return;
   f.querySelectorAll('input[type=radio]:checked').forEach(r => A[r.name] = r.value);
-  f.querySelectorAll('input[type=text][name], input[type=time][name], input[type=range][name]').forEach(t => A[t.name] = t.value);
+  f.querySelectorAll('input[type=text][name], input[type=email][name], input[type=time][name], input[type=range][name]').forEach(t => A[t.name] = t.value);
   const cb = f.querySelector('input[name=confirmBrands]'); if(cb) A.confirmBrands = cb.checked;
   const pr = f.querySelectorAll('input[name=proteins]');
   if(pr.length) A.proteins = [...pr].filter(x=>x.checked).map(x=>x.value);
@@ -857,7 +1012,17 @@ app.addEventListener('input', e => {
 });
 app.addEventListener('click', async e => {
   const go = e.target.closest('[data-go]');
-  if(go){ capture(); step = parseInt(go.dataset.go,10); if(step===STEPS.length && A.style!=="both") view = A.style; render(); return; }
+  if(go){ capture();
+    const target = parseInt(go.dataset.go,10);
+    if(SETUP && step === 0 && target === 1 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(A.email.trim())){
+      const er = document.getElementById('email-err'); if(er) er.classList.remove('hidden');
+      const f = document.getElementById('f-email'); if(f) f.focus(); return;
+    }
+    step = target; if(step===STEPS.length && A.style!=="both") view = A.style; render(); return; }
+  if(e.target.id === 'saveBtn'){ saveConfig(); return; }
+  if(e.target.closest('[data-preview]')){ renderPreview(); window.scrollTo({top:0}); return; }
+  if(e.target.closest('[data-finish]')){ renderFinish(); return; }
+  if(e.target.id === 'cfgBtn'){ downloadConfig(); return; }
   const v = e.target.closest('[data-view]');
   if(v){ view = v.dataset.view; renderPreview(); return; }
   const d = e.target.closest('[data-dec]');
