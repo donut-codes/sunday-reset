@@ -2,7 +2,7 @@
 
 A weekly life planner for Claude Code. Answer a few questions once. Every week you get one email with your workouts placed around your calendar, dinners, a grocery list sorted by aisle with live prices, bills and free trials pulled from your inbox, pet care, hobby time, and things to do nearby. Everything is already on your calendar and to-do list.
 
-**Try it first, no install:** [cameroncrump.com/sunday-reset](https://cameroncrump.com/sunday-reset/). That prototype is [`prototype/index.html`](prototype/index.html) in this repo, and the site is built straight from it, so the two never differ.
+**Try it first, no install:** [sundayreset.cameroncrump.com](https://sundayreset.cameroncrump.com/). That page is served straight from [`prototype/`](prototype/index.html) in this repo, so it's always the version on `main`.
 
 ## Before you install
 
