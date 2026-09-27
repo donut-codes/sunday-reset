@@ -1,0 +1,203 @@
+{
+ "full": false,
+ "emoji": false,
+ "greeting": "Good morning.",
+ "intro": "This is a dry run with sample data, so you can check the layout before your first real week.",
+ "test_notes": [
+  "<b>Sample:</b> everything in this email. Nothing was added to your calendar, to-do list, or store account.",
+  "<b>Real:</b> the layout, and delivery to your inbox."
+ ],
+ "oks": [
+  [
+   "Lactaid 2% ($4.99) is cheaper per ounce than your usual 365 Organic ($6.49). Keep Lactaid this week?",
+   "Keep",
+   "Swap back"
+  ],
+  [
+   "Organic onion is 58% more than conventional, over your 50% limit, so I picked conventional.",
+   "Keep",
+   "Organic"
+  ],
+  [
+   "A streaming free trial turns into $15.99/month on Wednesday. Add a reminder to cancel it Tuesday?",
+   "Remind me",
+   "Keep it"
+  ]
+ ],
+ "reply_by": "10:00 AM",
+ "days": [
+  [
+   "Sun",
+   "Oct 4",
+   [
+    [
+     "meal",
+     "Grocery pickup at Whole Foods, 10:30 AM",
+     null
+    ],
+    [
+     "meal",
+     "Batch cook, 2:00 to 3:30 PM",
+     null
+    ]
+   ]
+  ],
+  [
+   "Mon",
+   "Oct 5",
+   [
+    [
+     "move",
+     "Studio class, 7:00 AM",
+     null
+    ]
+   ]
+  ],
+  [
+   "Tue",
+   "Oct 6",
+   [
+    [
+     "busy",
+     "Dinner with friends, 6:30 PM",
+     null,
+     "sample"
+    ],
+    [
+     "admin",
+     "Package arriving: phone case",
+     null,
+     "sample inbox"
+    ]
+   ]
+  ],
+  [
+   "Wed",
+   "Oct 7",
+   [
+    [
+     "busy",
+     "Early call, 7:30 AM",
+     null,
+     "sample"
+    ],
+    [
+     "pet",
+     "Monthly meds for Baloo",
+     null
+    ]
+   ]
+  ],
+  [
+   "Thu",
+   "Oct 8",
+   [
+    [
+     "move",
+     "Home strength session, 7:00 AM",
+     null
+    ],
+    [
+     "admin",
+     "Electric bill due ($84.20)",
+     null,
+     "sample inbox"
+    ]
+   ]
+  ],
+  [
+   "Fri",
+   "Oct 9",
+   [
+    [
+     "move",
+     "Studio class, 7:00 AM",
+     null
+    ]
+   ]
+  ],
+  [
+   "Sat",
+   "Oct 10",
+   [
+    [
+     "busy",
+     "Farmers market, 9:00 AM",
+     null,
+     "sample"
+    ],
+    [
+     "move",
+     "Home strength session, 11:00 AM",
+     null
+    ],
+    [
+     "pet",
+     "Bath and brush for Baloo",
+     null
+    ]
+   ]
+  ]
+ ],
+ "list_note": "Sorted in the order you walk the store. Nothing goes in your cart.",
+ "stores": [
+  [
+   "Whole Foods",
+   "Live prices, Sep 25",
+   [
+    [
+     "Produce",
+     [
+      [
+       "Yellow onion, conventional",
+       1.19
+      ],
+      [
+       "Garlic, organic",
+       0.91
+      ]
+     ]
+    ],
+    [
+     "Dairy and fridge",
+     [
+      [
+       "Lactaid 2% lactose-free milk, 64 oz",
+       4.99,
+       null,
+       "low stock"
+      ]
+     ]
+    ],
+    [
+     "Pantry",
+     [
+      [
+       "De Cecco Penne Lisce, 16 oz",
+       2.43,
+       null,
+       "on sale"
+      ],
+      [
+       "Rao's Arrabbiata, 24 oz",
+       9.19
+      ]
+     ]
+    ],
+    [
+     "Snacks",
+     [
+      [
+       "Simple Mills Almond Flour Crackers, Sea Salt, 7 oz",
+       7.99,
+       null,
+       "low stock"
+      ]
+     ]
+    ]
+   ]
+  ]
+ ],
+ "saved": "Dry runs are saved to Documents/Sunday Reset/history/dry-run.",
+ "footer": "Dry run from Sunday Reset setup."
+}

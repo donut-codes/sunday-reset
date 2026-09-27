@@ -1,0 +1,3 @@
+{ "_note": "Sample Apple Watch export for dry runs.", "exported": "2026-10-04T06:00:00",
+  "nights": [ { "date": "2026-10-03", "sleep_hours": 5.1, "hrv_ms": 38, "resting_hr": 61 },
+              { "date": "2026-10-02", "sleep_hours": 7.6, "hrv_ms": 52, "resting_hr": 56 } ] }

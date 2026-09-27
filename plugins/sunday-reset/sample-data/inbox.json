@@ -1,0 +1,6 @@
+{ "_note": "Sample inbox items for dry runs.", "messages": [
+  { "from": "billing@example-power.com", "subject": "Your electric bill is ready: $84.20 due Oct 8", "kind": "bill" },
+  { "from": "hello@example-stream.com", "subject": "Your free trial ends Oct 7, then $15.99/month", "kind": "trial" },
+  { "from": "ship@example-store.com", "subject": "Your phone case arrives Tuesday", "kind": "delivery" },
+  { "from": "reminders@example-vet.com", "subject": "Time for monthly flea and heartworm meds", "kind": "pet" }
+] }

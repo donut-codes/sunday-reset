@@ -1,0 +1,7 @@
+{ "_note": "Sample week for dry runs. Times are local.", "week_of": "2026-10-04",
+  "events": [
+    { "day": "Tue", "start": "18:30", "end": "20:30", "title": "Dinner with friends" },
+    { "day": "Wed", "start": "07:30", "end": "08:30", "title": "Early call" },
+    { "day": "Thu", "start": "12:15", "end": "13:00", "title": "Dentist" },
+    { "day": "Sat", "start": "09:00", "end": "10:30", "title": "Farmers market" }
+  ] }

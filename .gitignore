@@ -1,0 +1,8 @@
+# Personal data never goes in the repo
+config.json
+!plugins/sunday-reset/config.example.json
+state/
+history/
+logs/
+*.log
+.DS_Store
